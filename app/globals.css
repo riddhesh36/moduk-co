@@ -3,21 +3,20 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #FDF8F0; /* Cream */
+  --foreground: #333333; /* Text body */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    @apply font-dmsans;
   }
-}
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  h1, h2 {
+    @apply font-playfair;
+  }
 }
 
 @layer utilities {
