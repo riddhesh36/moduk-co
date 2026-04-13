@@ -74,8 +74,9 @@ export default function CheckoutPage() {
       // 3. Success! Clear cart and redirect
       clearCart();
       router.push(`/order/${orderId}`);
-    } catch (err: any) {
-      console.error("Checkout Error:", err.message);
+    } catch (err: unknown) {
+      const errorBody = err instanceof Error ? err.message : String(err);
+      console.error("Checkout Error:", errorBody);
       alert("Something went wrong while placing your order. Please try again.");
     } finally {
       setLoading(false);

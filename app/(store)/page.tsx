@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Heart, Leaf, Star, Sparkles, MapPin, Clock } from "lucide-react";
 import { ProductCard } from "@/components/ui/ProductCard";
-import { type Product } from "@/types";
 
 import { MOCK_PRODUCTS } from "@/lib/constants";
 

@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { Leaf, Heart, Sparkles } from "lucide-react";
 
 export default function AboutPage() {
@@ -37,7 +36,7 @@ export default function AboutPage() {
           </p>
 
           <blockquote className="border-l-4 border-rose pl-6 my-12 italic text-xl text-dark font-playfair bg-rose/5 p-6 rounded-r-2xl">
-            "We believe the best offerings are made entirely by hand, with the purest ingredients. That's our promise."
+            &quot;We believe the best offerings are made entirely by hand, with the purest ingredients. That&apos;s our promise.&quot;
           </blockquote>
         </div>
 

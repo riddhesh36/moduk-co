@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+// import { supabase } from "@/lib/supabase";
 
-export async function POST(req: Request) {
+export async function POST() {
   try {
-    const body = await req.json();
+    // const body = await req.json();
     
     // Simulate Supabase insert
     // const { data, error } = await supabase.from('orders').insert([body]).select();
@@ -12,7 +12,8 @@ export async function POST(req: Request) {
     // await supabase.rpc('increment_slot_count', { slot_id_arg: body.slot_id });
 
     return NextResponse.json({ success: true, order_id: "ORD-" + Math.floor(100000 + Math.random() * 900000) });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err: unknown) {
+    const errorBody = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: errorBody }, { status: 500 });
   }
 }

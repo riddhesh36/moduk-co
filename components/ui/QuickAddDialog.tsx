@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import NextImage from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, Minus, ShoppingCart } from "lucide-react";
 import { Button } from "./button";
@@ -72,7 +73,7 @@ export function QuickAddDialog({
 
                 <div className="flex gap-4 mb-6">
                   <div className="w-20 h-20 bg-blush rounded-xl overflow-hidden shrink-0 relative">
-                    <img src={product.image_url} alt={product.name} className="object-cover w-full h-full" />
+                    <NextImage src={product.image_url} alt={product.name} fill className="object-cover" />
                   </div>
                   <div>
                     <h2 className="text-xl font-playfair font-bold text-dark leading-tight">{product.name}</h2>

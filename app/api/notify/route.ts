@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
 // In a real app, these would be in .env.local
-const INTERAKT_API_KEY = process.env.INTERAKT_API_KEY || "YOUR_INTERAKT_API_KEY";
-const INTERAKT_API_URL = "https://api.interakt.ai/v1/public/message/";
+// const INTERAKT_API_KEY = process.env.INTERAKT_API_KEY || "YOUR_INTERAKT_API_KEY";
+// const INTERAKT_API_URL = "https://api.interakt.ai/v1/public/message/";
 
 export async function POST(req: Request) {
   try {
@@ -50,8 +50,9 @@ export async function POST(req: Request) {
       message: "Notification queued",
       mock: true 
     });
-  } catch (err: any) {
-    console.error("[WHATSAPP ERROR]", err.message);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err: unknown) {
+    const errorBody = err instanceof Error ? err.message : String(err);
+    console.error("[WHATSAPP ERROR]", errorBody);
+    return NextResponse.json({ error: errorBody }, { status: 500 });
   }
 }

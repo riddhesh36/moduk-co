@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+// import { supabase } from "@/lib/supabase";
 import { MOCK_SLOTS } from "@/lib/constants";
 
 export async function GET() {
@@ -10,7 +10,8 @@ export async function GET() {
     
     // For now we will return mock slots to simulate the database
     return NextResponse.json(MOCK_SLOTS);
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err: unknown) {
+    const errorBody = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: errorBody }, { status: 500 });
   }
 }
