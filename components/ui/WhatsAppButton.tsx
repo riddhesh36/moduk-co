@@ -11,7 +11,7 @@ interface WhatsAppButtonProps {
 }
 
 export function WhatsAppButton({
-  phoneNumber = "919876543210", // Default number, should be replaced with real one
+  phoneNumber = "918591781695", // Default number, should be replaced with real one
   message = "Hi Moduk & Co! I'd like to ask about...",
   className = "",
   variant = "floating"
@@ -20,9 +20,9 @@ export function WhatsAppButton({
 
   if (variant === "link") {
     return (
-      <a 
-        href={url} 
-        target="_blank" 
+      <a
+        href={url}
+        target="_blank"
         rel="noopener noreferrer"
         className={`hover:text-rose transition-colors ${className}`}
       >
