@@ -9,8 +9,8 @@ interface SlotSelectorPillProps extends React.ButtonHTMLAttributes<HTMLButtonEle
 
 export function SlotSelectorPill({ slotItem, isSelected, className, ...props }: SlotSelectorPillProps) {
   // PRD logic for past cut-off
-  const isPastCutoff = isSlotPastCutoff(slotItem.cutoff_time);
-  const isFull = slotItem.confirmed_orders >= slotItem.max_capacity;
+  const isPastCutoff = isSlotPastCutoff(slotItem.cutoff_time, slotItem.slot_date);
+  const isFull = (slotItem.confirmed_orders || 0) >= slotItem.max_capacity;
   
   // Note: if is_active is false from admin toggles, we probably don't render it at all or render it closed
   const isAvailable = slotItem.is_active && !isPastCutoff && !isFull;
@@ -41,17 +41,22 @@ export function SlotSelectorPill({ slotItem, isSelected, className, ...props }: 
 
 // Client-side helper check assuming IST (since we only care about Today's slots for cutoff)
 // For tomorrow's slots we probably don't run the cutoff check, so this should ideally take a "date" context
-function isSlotPastCutoff(cutoffTimeString: string): boolean {
-  // Basic implementation to be fleshed out with actual Date checking
-  // Time format expected e.g., "09:30:00"
+// Client-side helper check assuming IST
+function isSlotPastCutoff(cutoffTimeString: string, slotDate?: string): boolean {
+  if (!slotDate) return false;
+
   const now = new Date();
-  const [hours, minutes] = cutoffTimeString.split(':').map(Number);
+  const slotDateObj = new Date(slotDate);
   
-  // Create a Date object for the cut-off time today
+  // If slot date is in the future, it's not past cutoff
+  if (slotDateObj.setHours(0,0,0,0) > now.setHours(0,0,0,0)) {
+    return false;
+  }
+  
+  // If slot date is today, check the time
+  const [hours, minutes] = cutoffTimeString.split(':').map(Number);
   const cutoffDateTime = new Date();
   cutoffDateTime.setHours(hours, minutes, 0, 0);
 
-  // Return true only if current time > cutoff time. 
-  // (Note: This is basic. Higher-level component should pass boolean prop if this is tomorrow to skip check)
-  return now > cutoffDateTime;
+  return new Date() > cutoffDateTime;
 }

@@ -2,17 +2,43 @@
 
 import { useCart } from "@/components/cart/CartContext";
 import { Button } from "@/components/ui/button";
-import { MOCK_SLOTS } from "@/lib/constants";
+import { createClient } from "@supabase/supabase-js";
+import { type Slot } from "@/types";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CheckCircle2 } from "lucide-react";
+import { PaymentQRDialog } from "@/components/ui/PaymentQRDialog";
+import { AlertDialog } from "@/components/ui/AlertDialog";
 
 export default function CheckoutPage() {
   const { items, totalPrice, clearCart } = useCart();
+  const [slots, setSlots] = useState<Slot[]>([]);
+
+  useEffect(() => {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+    );
+    supabase.from('delivery_slots').select('*').then(({ data }) => {
+      if (data) setSlots(data);
+    });
+  }, []);
+
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return "";
+    if (dateStr === "today") return "Today";
+    if (dateStr === "tomorrow") return "Tomorrow";
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  };
+
   const router = useRouter();
   
   const [paymentMethod, setPaymentMethod] = useState<"upi" | "cod">("upi");
   const [loading, setLoading] = useState(false);
+  const [qrModalOpen, setQrModalOpen] = useState(false);
+  const [errorAlertOpen, setErrorAlertOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Form State
   const [formData, setFormData] = useState({
@@ -30,8 +56,19 @@ export default function CheckoutPage() {
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    
+    if (paymentMethod === "upi") {
+      setQrModalOpen(true);
+      return;
+    }
 
+    executePlaceOrder();
+  };
+
+  const executePlaceOrder = async () => {
+    setLoading(true);
+    // Keep modal open while confirming
+    
     try {
       // 1. Place the order in the database
       const orderResponse = await fetch("/api/place-order", {
@@ -73,24 +110,33 @@ export default function CheckoutPage() {
 
       // 3. Success! Clear cart and redirect
       clearCart();
+      setQrModalOpen(false);
       router.push(`/order/${orderId}`);
     } catch (err: unknown) {
+      setQrModalOpen(false);
       const errorBody = err instanceof Error ? err.message : String(err);
       console.error("Checkout Error:", errorBody);
-      alert("Something went wrong while placing your order. Please try again.");
+      setErrorMessage(errorBody);
+      setErrorAlertOpen(true);
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    if (items.length === 0) {
+      router.push("/cart");
+    }
+  }, [items.length, router]);
+
   if (items.length === 0) {
-    router.push("/cart");
     return null;
   }
 
   const deliveryFee = 50; // Mock delivery fee
 
   return (
+    <>
     <div className="w-full bg-cream min-h-screen py-8 md:py-16 px-6">
       <div className="max-w-5xl mx-auto flex flex-col md:flex-row gap-12">
         
@@ -152,7 +198,7 @@ export default function CheckoutPage() {
               <div className="flex flex-col gap-3">
                 <label className={`flex items-center gap-3 p-4 border rounded-lg cursor-pointer transition-colors ${paymentMethod === 'upi' ? 'border-rose bg-blush/30' : 'border-dark/10'}`}>
                   <input type="radio" name="payment" value="upi" checked={paymentMethod === 'upi'} onChange={() => setPaymentMethod('upi')} className="w-4 h-4 text-rose focus:ring-rose" />
-                  <div className="flex-1 text-sm font-semibold">UPI via Razorpay (GPay, PhonePe, Paytm)</div>
+                  <div className="flex-1 text-sm font-semibold">Scan to Pay (UPI)</div>
                 </label>
                 <label className={`flex items-center gap-3 p-4 border rounded-lg cursor-pointer transition-colors ${paymentMethod === 'cod' ? 'border-rose bg-blush/30' : 'border-dark/10'}`}>
                   <input type="radio" name="payment" value="cod" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} className="w-4 h-4 text-rose focus:ring-rose" />
@@ -171,8 +217,8 @@ export default function CheckoutPage() {
             
             <div className="flex flex-col gap-3 text-sm pb-4 border-b border-dark/5 mb-4">
               {items.map((item, idx) => {
-                const slotMap = MOCK_SLOTS.find(s => s.id === item.selectedSlotId);
-                const label = slotMap ? slotMap.label : item.selectedSlotId;
+                const slotMap = slots.find(s => s.id === item.selectedSlotId);
+                const label = slotMap ? slotMap.label : "Morning Slot";
                 return (
                   <div key={idx} className="flex flex-col gap-1.5 border border-dark/5 rounded-lg p-3 bg-cream/30">
                     <div className="flex justify-between font-semibold">
@@ -181,7 +227,7 @@ export default function CheckoutPage() {
                     </div>
                     <div className="text-xs text-text-muted flex items-center gap-1.5">
                       <CheckCircle2 size={12} className="text-rose"/> 
-                      {item.selectedDate === "today" ? "Today" : "Tomorrow"} | {label}
+                      {formatDate(item.selectedDate)} | {label}
                     </div>
                   </div>
                 );
@@ -218,5 +264,21 @@ export default function CheckoutPage() {
 
       </div>
     </div>
+    
+    <PaymentQRDialog 
+      isOpen={qrModalOpen}
+      onClose={() => setQrModalOpen(false)}
+      onConfirm={executePlaceOrder}
+      amount={totalPrice + deliveryFee}
+      isLoading={loading}
+    />
+    
+    <AlertDialog 
+      isOpen={errorAlertOpen}
+      onClose={() => setErrorAlertOpen(false)}
+      title="Order Failed"
+      description={errorMessage || "Something went wrong while placing your order. Please try again."}
+    />
+    </>
   );
 }

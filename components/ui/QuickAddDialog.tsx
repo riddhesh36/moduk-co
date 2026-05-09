@@ -6,31 +6,34 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, Minus, ShoppingCart } from "lucide-react";
 import { Button } from "./button";
 import { SlotSelector } from "./SlotSelector";
-import { MOCK_SLOTS } from "@/lib/constants";
-import { type Product } from "@/types";
+import { type Product, type Slot } from "@/types";
 import { useCart } from "@/components/cart/CartContext";
+import { AlertDialog } from "./AlertDialog";
 
 interface QuickAddDialogProps {
   product: Product | null;
   isOpen: boolean;
   onClose: () => void;
+  slots: Slot[];
 }
 
 export function QuickAddDialog({
   product,
   isOpen,
   onClose,
+  slots,
 }: QuickAddDialogProps) {
   const { addToCart } = useCart();
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState<string>("19th April");
+  const [selectedDate, setSelectedDate] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
+  const [showValidationAlert, setShowValidationAlert] = useState(false);
 
   if (!product) return null;
 
   const handleAddToCart = () => {
     if (!selectedSlot) {
-      alert("Please select a delivery slot.");
+      setShowValidationAlert(true);
       return;
     }
 
@@ -45,6 +48,7 @@ export function QuickAddDialog({
   };
 
   return (
+    <>
     <AnimatePresence>
       {isOpen && (
         <>
@@ -78,7 +82,7 @@ export function QuickAddDialog({
                   <div>
                     <h2 className="text-xl font-playfair font-bold text-dark leading-tight">{product.name}</h2>
                     <p className="text-rose font-bold mt-1">₹{product.price}</p>
-                    <p className="text-[12px] text-text-muted mt-0.5 tracking-wide uppercase">{product.price_label.split("·")[1]?.trim() || "per box"}</p>
+                    <p className="text-[12px] text-text-muted mt-0.5 tracking-wide uppercase">{product.pieces} Pieces</p>
                   </div>
                 </div>
 
@@ -86,7 +90,7 @@ export function QuickAddDialog({
                   <div>
                     <h3 className="text-sm font-bold text-dark mb-3 uppercase tracking-wider">Select Delivery Slot</h3>
                     <SlotSelector 
-                      slots={MOCK_SLOTS}
+                      slots={slots}
                       selectedSlotId={selectedSlot}
                       onSelectSlot={(slotId, date) => {
                         setSelectedSlot(slotId);
@@ -134,5 +138,13 @@ export function QuickAddDialog({
         </>
       )}
     </AnimatePresence>
+
+    <AlertDialog 
+      isOpen={showValidationAlert}
+      onClose={() => setShowValidationAlert(false)}
+      title="Slot Required"
+      description="Please select a delivery slot before adding items to your cart."
+    />
+    </>
   );
 }

@@ -1,24 +1,98 @@
-"use client";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import { Package, Banknote, ShoppingBag } from "lucide-react";
+import OrderActionButtons from "@/components/admin/OrderActionButtons";
 
-import { CheckCircle, Clock } from "lucide-react";
+export const dynamic = "force-dynamic";
 
-export default function AdminOrderInbox() {
-  // Mock data representing recent orders
-  const mockOrders = [
-    { id: "ORD-123456", customer: "Priya Sharma", items: "1x Classic Ukadiche", slot: "SLOT-AM (Today)", status: "pending", type: "upi", total: "₹349" },
-    { id: "ORD-987654", customer: "Rahul Verma", items: "2x Kesar Delight", slot: "SLOT-PM (Today)", status: "dispatched", type: "cod", total: "₹898" },
-    { id: "ORD-456789", customer: "Sneha Iyer", items: "1x Classic, 1x Kesar", slot: "SLOT-EVE (Tomorrow)", status: "pending", type: "upi", total: "₹798" },
-  ];
+export default async function AdminOrderInbox() {
+  const cookieStore = cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || "https://mock.supabase.co",
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "mock-key",
+    {
+      cookies: {
+        getAll() { return cookieStore.getAll(); },
+        setAll() {},
+      },
+    }
+  );
+
+  const today = new Date().toISOString().split('T')[0];
+
+  const { data: allOrders } = await supabase
+    .from('orders')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  const orders = allOrders || [];
+  
+  // KPI Calculations
+  const todayOrders = orders.filter(o => o.slot_date === today);
+  
+  const revenueToday = todayOrders
+    .filter(o => o.status !== 'cancelled' && (o.payment_status === 'paid' || o.payment_method === 'cod'))
+    .reduce((sum, o) => sum + Number(o.total_amount), 0);
+
+  // Modak Count Calculation
+  // Classic = 5, Delight = 7, Celebration = 11
+  let totalModaks = 0;
+  todayOrders.filter(o => o.status !== 'cancelled').forEach(order => {
+    order.items.forEach((item: { product_id: string; name: string; qty: number }) => {
+      if (item.product_id === 'classic-box' || item.name.toLowerCase().includes('classic')) {
+        totalModaks += (5 * item.qty);
+      } else if (item.product_id === 'delight-box' || item.name.toLowerCase().includes('delight')) {
+        totalModaks += (7 * item.qty);
+      } else if (item.product_id === 'celebration-box' || item.name.toLowerCase().includes('celebration')) {
+        totalModaks += (11 * item.qty);
+      }
+    });
+  });
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-10">
-        <h1 className="text-3xl font-playfair font-bold text-[#2C1A1D]">Order Inbox</h1>
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-playfair font-bold text-[#2C1A1D]">Order Management</h1>
+          <p className="text-[#777777] mt-1">Real-time overview of your incoming orders and daily targets.</p>
+        </div>
         <button className="bg-[#C4617A] text-white px-5 py-2 rounded-lg font-semibold shadow-sm hover:bg-[#C4617A]/90">
           Export CSV
         </button>
       </div>
 
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <div className="bg-white border border-[#FDF0F3] p-6 rounded-2xl shadow-sm flex items-center gap-4">
+          <div className="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center">
+            <ShoppingBag size={24} />
+          </div>
+          <div>
+            <p className="text-sm text-[#777777] font-semibold">Orders Today</p>
+            <h3 className="text-2xl font-bold font-playfair">{todayOrders.length}</h3>
+          </div>
+        </div>
+        <div className="bg-white border border-[#FDF0F3] p-6 rounded-2xl shadow-sm flex items-center gap-4">
+          <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
+            <Banknote size={24} />
+          </div>
+          <div>
+            <p className="text-sm text-[#777777] font-semibold">Revenue Today</p>
+            <h3 className="text-2xl font-bold font-playfair">₹{revenueToday.toLocaleString()}</h3>
+          </div>
+        </div>
+        <div className="bg-white border border-[#FDF0F3] p-6 rounded-2xl shadow-sm flex items-center gap-4">
+          <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center">
+            <Package size={24} />
+          </div>
+          <div>
+            <p className="text-sm text-[#777777] font-semibold">Modaks to Prepare (Today)</p>
+            <h3 className="text-2xl font-bold font-playfair">{totalModaks} Pieces</h3>
+          </div>
+        </div>
+      </div>
+
+      {/* Data Table */}
       <div className="bg-white border text-sm border-[#FDF0F3] rounded-xl overflow-hidden shadow-sm">
         <table className="w-full text-left border-collapse">
           <thead>
@@ -26,31 +100,36 @@ export default function AdminOrderInbox() {
               <th className="px-6 py-4 font-semibold">Order ID</th>
               <th className="px-6 py-4 font-semibold">Customer</th>
               <th className="px-6 py-4 font-semibold">Items</th>
-              <th className="px-6 py-4 font-semibold">Slot</th>
+              <th className="px-6 py-4 font-semibold">Slot Info</th>
               <th className="px-6 py-4 font-semibold">Total</th>
-              <th className="px-6 py-4 font-semibold">Status / Action</th>
+              <th className="px-6 py-4 font-semibold">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#FDF0F3]">
-            {mockOrders.map(order => (
+            {orders.length === 0 && (
+              <tr>
+                <td colSpan={6} className="px-6 py-10 text-center text-[#777777]">No orders found in the database.</td>
+              </tr>
+            )}
+            {orders.map(order => (
               <tr key={order.id} className="hover:bg-[#FDF8F0]/30 transition-colors">
-                <td className="px-6 py-4 font-mono font-medium">{order.id}
-                  {order.type === 'cod' && <span className="ml-2 bg-yellow-100 text-yellow-800 text-[10px] px-2 py-0.5 rounded-full font-bold">COD</span>}
+                <td className="px-6 py-4 font-mono font-medium">{order.display_id}
+                  {order.payment_method === 'cod' && <span className="ml-2 bg-yellow-100 text-yellow-800 text-[10px] px-2 py-0.5 rounded-full font-bold">COD</span>}
                 </td>
-                <td className="px-6 py-4 font-medium">{order.customer}</td>
-                <td className="px-6 py-4 text-[#777777]">{order.items}</td>
-                <td className="px-6 py-4 text-[#777777]">{order.slot}</td>
-                <td className="px-6 py-4 font-semibold text-[#C4617A]">{order.total}</td>
-                <td className="px-6 py-4">
-                  {order.status === "pending" ? (
-                    <button className="flex items-center gap-2 bg-[#2C1A1D] text-white py-1.5 px-3 rounded text-xs font-semibold hover:bg-black">
-                      <Clock size={14} /> Mark Dispatched
-                    </button>
-                  ) : (
-                    <span className="flex items-center gap-2 text-green-600 font-semibold text-xs py-1.5 px-3">
-                      <CheckCircle size={14} /> Dispatched
-                    </span>
-                  )}
+                <td className="px-6 py-4 font-medium">
+                  {order.customer_name}
+                  <div className="text-xs text-[#777777] mt-0.5">{order.customer_mobile}</div>
+                </td>
+                <td className="px-6 py-4 text-[#777777]">
+                  {order.items.map((it: { qty: number; name: string }) => `${it.qty}x ${it.name}`).join(", ")}
+                </td>
+                <td className="px-6 py-4 text-[#777777]">
+                  <div className="font-medium text-[#2C1A1D]">{order.slot_id}</div>
+                  <div className="text-xs mt-0.5">{order.slot_date}</div>
+                </td>
+                <td className="px-6 py-4 font-semibold text-[#C4617A]">₹{order.total_amount}</td>
+                <td className="px-6 py-4 flex items-center gap-2">
+                  <OrderActionButtons orderId={order.id} status={order.status} />
                 </td>
               </tr>
             ))}

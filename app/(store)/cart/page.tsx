@@ -1,14 +1,36 @@
 "use client";
 
+import { useState, useEffect } from "react";
+
 import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/components/cart/CartContext";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
-import { MOCK_SLOTS } from "@/lib/constants";
+import { createClient } from "@supabase/supabase-js";
+import { type Slot } from "@/types";
 
 export default function CartPage() {
   const { items, removeFromCart, totalPrice } = useCart();
+  const [slots, setSlots] = useState<Slot[]>([]);
+
+  useEffect(() => {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+    );
+    supabase.from('delivery_slots').select('*').then(({ data }) => {
+      if (data) setSlots(data);
+    });
+  }, []);
+
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return "";
+    if (dateStr === "today") return "Today";
+    if (dateStr === "tomorrow") return "Tomorrow";
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  };
 
   if (items.length === 0) {
     return (
@@ -32,8 +54,8 @@ export default function CartPage() {
           
           <div className="flex flex-col gap-6">
             {items.map((item) => {
-              const slotMap = MOCK_SLOTS.find(s => s.id === item.selectedSlotId);
-              const label = slotMap ? slotMap.label : item.selectedSlotId;
+              const slotMap = slots.find(s => s.id === item.selectedSlotId);
+              const label = slotMap ? slotMap.label : "Morning Slot";
 
               return (
                 <div key={item.product.id} className="flex gap-4 bg-white p-4 rounded-xl border border-dark/5 shadow-sm">
@@ -54,7 +76,7 @@ export default function CartPage() {
                     <p className="text-sm text-text-muted mt-1">Qty: {item.quantity} · ₹{item.product.price} each</p>
                     
                     <div className="mt-auto inline-flex self-start bg-rose/10 text-rose border border-rose/20 px-2.5 py-1 rounded-md text-xs font-semibold">
-                      {item.selectedDate === "today" ? "Today" : "Tomorrow"} | {label}
+                      {formatDate(item.selectedDate)} | {label}
                     </div>
                   </div>
                 </div>

@@ -1,7 +1,28 @@
 import { Leaf, Truck, Clock } from "lucide-react";
-import { MOCK_SLOTS } from "@/lib/constants";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
-export default function DeliveryPage() {
+export const dynamic = "force-dynamic";
+
+export default async function DeliveryPage() {
+  const cookieStore = cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+    {
+      cookies: {
+        getAll() { return cookieStore.getAll(); },
+        setAll() {},
+      },
+    }
+  );
+
+  const { data: slots } = await supabase
+    .from('delivery_slots')
+    .select('*')
+    .eq('is_active', true)
+    .order('cutoff_time');
+
   return (
     <div className="w-full bg-cream min-h-screen py-16 px-6">
       <div className="max-w-4xl mx-auto">
@@ -37,17 +58,23 @@ export default function DeliveryPage() {
             <div className="w-12 h-12 bg-rose/10 text-rose rounded-xl flex items-center justify-center mb-6">
               <Clock size={24} />
             </div>
-            <h2 className="text-2xl font-playfair font-bold text-dark mb-4">Today&apos;s Slots</h2>
+            <h2 className="text-2xl font-playfair font-bold text-dark mb-4">Available Slots</h2>
             <p className="text-text-body mb-4">
               We offer multiple delivery slots to ensure maximum freshness.
             </p>
             <div className="space-y-3 w-full">
-              {MOCK_SLOTS.map(slot => (
+              {slots?.map(slot => (
                 <div key={slot.id} className="flex justify-between items-center border-b border-dark/5 pb-2">
-                  <span className="font-semibold text-dark">{slot.label}</span>
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-dark">{slot.label}</span>
+                    {slot.slot_date && <span className="text-[10px] text-text-muted">Date: {new Date(slot.slot_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>}
+                  </div>
                   <span className="text-xs text-text-muted bg-cream px-2 py-1 rounded">Cut-off: {slot.cutoff_time.slice(0,5)}</span>
                 </div>
               ))}
+              {(!slots || slots.length === 0) && (
+                <p className="text-sm text-text-muted">No active delivery slots available.</p>
+              )}
             </div>
           </div>
 

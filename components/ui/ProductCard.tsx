@@ -45,7 +45,7 @@ export function ProductCard({ product, slotsAvailable, onAddToCart }: ProductCar
         <div className="mt-auto flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <span className="text-[20px] font-bold text-rose">₹{product.price}</span>
-            <span className="text-[13px] text-text-muted">{product.price_label.split("·")[1]?.trim() || "per box"}</span>
+            <span className="text-[13px] text-text-muted">{product.pieces} Pieces</span>
           </div>
 
           <Button 

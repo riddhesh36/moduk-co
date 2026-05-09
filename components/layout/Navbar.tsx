@@ -12,7 +12,7 @@ export function Navbar() {
   // Simplified link list
   const navLinks = [
     { label: "Shop", href: "/shop" },
-    { label: "About", href: "/about" },
+    { label: "My Orders", href: "/track" },
     { label: "Delivery", href: "/delivery" },
     { label: "FAQs", href: "/faq" },
   ];
