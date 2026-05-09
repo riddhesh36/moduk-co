@@ -1,7 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { Package, Truck, CheckCircle, Clock, MoreVertical, CreditCard, ShoppingBag } from "lucide-react";
+import { Package, ShoppingBag } from "lucide-react";
 import { updateOrderStatus, updatePaymentStatus } from "./actions";
+import { type Order, type OrderItem } from "@/types";
 
 export const dynamic = "force-dynamic";
 
@@ -146,7 +147,7 @@ function OrderStatusBadge({ status, orderId }: { status: string, orderId: string
   );
 }
 
-function OrderItemsModal({ order }: { order: any }) {
+function OrderItemsModal({ order }: { order: Order }) {
   // Simple "details" view
   return (
     <div className="group relative">
@@ -158,7 +159,7 @@ function OrderItemsModal({ order }: { order: any }) {
           <Package size={16} /> Order Details
         </h3>
         <div className="space-y-4 mb-4">
-          {order.items?.map((item: any, idx: number) => (
+          {order.items?.map((item: OrderItem, idx: number) => (
             <div key={idx} className="flex justify-between items-start gap-4">
               <div className="flex-1">
                 <div className="font-bold text-sm text-dark">{item.product?.name || 'Product'}</div>

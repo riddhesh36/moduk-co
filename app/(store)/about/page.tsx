@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Leaf, Heart, Sparkles } from "lucide-react";
 
 export default function AboutPage() {
@@ -13,7 +14,7 @@ export default function AboutPage() {
         </div>
 
         <div className="w-full aspect-[21/12] bg-blush rounded-2xl overflow-hidden mb-16 relative flex items-center justify-center border border-rose/10">
-          <img src="/images/about-img.png" alt="About" className="w-full h-full object-cover" />
+          <Image src="/images/about-img.png" alt="About" fill className="object-cover" />
           <div className="absolute inset-0 bg-rose/5" />
 
         </div>

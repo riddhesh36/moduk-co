@@ -37,7 +37,7 @@ export async function addProduct(formData: FormData) {
     const fileExt = imageFile.name.split('.').pop();
     const fileName = `${slug}-${Date.now()}.${fileExt}`;
     
-    const { data: uploadData, error: uploadError } = await supabase
+    const { error: uploadError } = await supabase
       .storage
       .from('products')
       .upload(fileName, imageFile, {
@@ -115,7 +115,7 @@ export async function updateProduct(formData: FormData) {
     const fileExt = imageFile.name.split('.').pop();
     const fileName = `${id}-${Date.now()}.${fileExt}`;
     
-    const { data: uploadData, error: uploadError } = await supabase
+    const { error: uploadError } = await supabase
       .storage
       .from('products')
       .upload(fileName, imageFile, {

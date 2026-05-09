@@ -1,9 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { Plus, Trash2, Edit2, Package } from "lucide-react";
+import { Trash2, Package } from "lucide-react";
+import Image from "next/image";
 import { deleteProduct } from "./actions";
 import ProductFormButton from "@/components/admin/ProductFormButton";
 import EditProductButton from "./EditProductButton";
+import { type Product } from "@/types";
 
 export const dynamic = "force-dynamic";
 
@@ -57,7 +59,7 @@ export default async function AdminProductsPage() {
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-lg bg-cream overflow-hidden border border-[#FDF0F3] relative">
                       {product.image_url ? (
-                        <img src={product.image_url} alt={product.name} className="object-cover w-full h-full" />
+                        <Image src={product.image_url} alt={product.name} fill className="object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-rose-300">
                           <Package size={20} />
@@ -83,7 +85,7 @@ export default async function AdminProductsPage() {
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
-                    <EditProductButton product={product as any} />
+                    <EditProductButton product={product as unknown as Product} />
                     <form action={async () => {
                       "use server";
                       await deleteProduct(product.id);

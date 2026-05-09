@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ShoppingBag, Truck, CheckCircle2, ChevronRight, LogOut, ArrowLeft, Loader2 } from "lucide-react";
+import { ShoppingBag, CheckCircle2, ChevronRight, LogOut, ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { sendOTP, verifyOTP, getCustomerOrders, logoutCustomer } from "./actions";
 import Link from "next/link";
+import { type Order } from "@/types";
 
 export default function TrackOrdersPage() {
   const [step, setStep] = useState<"mobile" | "otp" | "list">("mobile");
@@ -12,7 +13,18 @@ export default function TrackOrdersPage() {
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [timer, setTimer] = useState(0);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [timer]);
 
   // Check if already "logged in"
   useEffect(() => {
@@ -28,17 +40,20 @@ export default function TrackOrdersPage() {
     fetchOrders();
   }, []);
 
-  const handleSendOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSendOTP = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!mobile || mobile.length < 10) {
       setError("Please enter a valid mobile number.");
       return;
     }
+    if (loading || timer > 0) return; // Prevent multi-clicks
+
     setLoading(true);
     setError("");
     const res = await sendOTP(mobile);
     if (res.success) {
       setStep("otp");
+      setTimer(30); // 30 seconds wait
     } else {
       setError(res.error || "Failed to send OTP.");
     }
@@ -145,10 +160,11 @@ export default function TrackOrdersPage() {
               </Button>
               <button 
                 type="button" 
-                onClick={handleSendOTP} 
-                className="text-sm text-rose font-semibold hover:underline mt-4 block mx-auto"
+                onClick={() => handleSendOTP()} 
+                disabled={timer > 0 || loading}
+                className="text-sm text-rose font-semibold hover:underline mt-4 block mx-auto disabled:text-text-muted disabled:no-underline"
               >
-                Resend OTP
+                {timer > 0 ? `Resend OTP in ${timer}s` : "Resend OTP"}
               </button>
             </form>
           </div>
@@ -182,7 +198,7 @@ export default function TrackOrdersPage() {
                       </div>
                       
                       <div className="space-y-4 mb-6">
-                        {order.items?.map((item: any, idx: number) => (
+                        {order.items?.map((item: { product?: { name: string; price: number }; quantity: number }, idx: number) => (
                           <div key={idx} className="flex items-center gap-4">
                             <div className="w-12 h-12 bg-cream rounded-xl flex items-center justify-center shrink-0">
                                <ShoppingBag size={20} className="text-rose/50" />

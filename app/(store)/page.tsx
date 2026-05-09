@@ -1,7 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Heart, Leaf, Star, Sparkles, MapPin, Clock } from "lucide-react";
+import { Heart, Leaf, Star } from "lucide-react";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { MOCK_PRODUCTS } from "@/lib/constants";

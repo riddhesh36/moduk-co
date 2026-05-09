@@ -135,7 +135,7 @@ export default function AdminSlotsPage() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {slots.map(slot => {
-            const isFull = slot.confirmed_orders >= slot.max_capacity;
+            const isFull = (slot.confirmed_orders || 0) >= slot.max_capacity;
 
             return (
               <div key={slot.id} className="border border-[#FDF0F3] bg-white p-6 rounded-2xl flex flex-col justify-between shadow-sm relative">
