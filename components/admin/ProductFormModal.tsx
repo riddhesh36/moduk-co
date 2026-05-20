@@ -43,14 +43,18 @@ export default function ProductFormModal({ isOpen, onClose, product }: { isOpen:
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl w-full max-w-2xl shadow-xl mt-20 mb-20">
-        <div className="p-6 border-b border-[#FDF0F3] flex justify-between items-center">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div 
+        className="fixed inset-0" 
+        onClick={onClose}
+      />
+      <div className="bg-white rounded-2xl w-full max-w-2xl shadow-xl flex flex-col max-h-[90vh] overflow-hidden relative z-10">
+        <div className="p-6 border-b border-[#FDF0F3] flex justify-between items-center flex-shrink-0">
           <h2 className="text-2xl font-playfair font-bold text-[#2C1A1D]">{product ? "Edit Product" : "Add New Product"}</h2>
-          <button onClick={onClose} className="text-[#777777] hover:text-[#2C1A1D]">&times;</button>
+          <button onClick={onClose} className="text-[#777777] hover:text-[#2C1A1D] text-2xl font-bold">&times;</button>
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold text-[#777777] mb-1">Product Name *</label>
               <input name="name" defaultValue={product?.name} required className="w-full border border-[#FDF0F3] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C4617A]" placeholder="Classic Box" />
@@ -79,7 +83,7 @@ export default function ProductFormModal({ isOpen, onClose, product }: { isOpen:
             <input name="ingredients" defaultValue={product?.ingredients?.join(", ")} required className="w-full border border-[#FDF0F3] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C4617A]" placeholder="Fresh Coconut, Rice Flour, Jaggery..." />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold text-[#777777] mb-1">Image Upload (or Image URL)</label>
               <input name="image_file" type="file" accept="image/*" className="w-full border border-[#FDF0F3] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C4617A] mb-2" />
@@ -98,7 +102,7 @@ export default function ProductFormModal({ isOpen, onClose, product }: { isOpen:
             </div>
           </div>
 
-          <div className="pt-4 flex justify-end gap-3">
+          <div className="pt-4 flex justify-end gap-3 border-t border-[#FDF0F3] flex-shrink-0">
             <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-semibold text-[#777777] hover:bg-[#FDF0F3] rounded-lg transition-colors">Cancel</button>
             <button type="submit" disabled={loading} className="px-4 py-2 text-sm font-semibold text-white bg-[#C4617A] hover:bg-[#C4617A]/90 rounded-lg shadow-sm transition-colors disabled:opacity-50">
               {loading ? "Saving..." : "Save Product"}

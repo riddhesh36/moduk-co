@@ -64,14 +64,14 @@ export default function AdminSlotsPage() {
 
   return (
     <div>
-      <div className="mb-10 flex justify-between items-center">
+      <div className="mb-10 flex flex-col sm:flex-row sm:justify-between sm:items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-playfair font-bold text-[#2C1A1D]">Slot Management</h1>
           <p className="text-[#777777] mt-2">Adjust physical logistics constraints safely. Storefront will hide sold-out slots.</p>
         </div>
         <button 
           onClick={() => setShowCreate(!showCreate)}
-          className="flex items-center gap-2 bg-[#2C1A1D] text-white px-5 py-3 rounded-xl font-semibold hover:bg-black transition-colors"
+          className="flex items-center gap-2 bg-[#2C1A1D] text-white px-5 py-3 rounded-xl font-semibold hover:bg-black transition-colors self-start sm:self-auto"
         >
           <Plus size={20} /> Create Slot
         </button>
@@ -101,7 +101,7 @@ export default function AdminSlotsPage() {
                 alert("Failed to create: " + res.error);
               }
             }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end"
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 items-end"
           >
             <div>
               <label className="block text-xs font-semibold mb-1">ID Code (e.g. SLOT-MORNING)</label>
@@ -123,7 +123,7 @@ export default function AdminSlotsPage() {
               <label className="block text-xs font-semibold mb-1">Slot Date</label>
               <input name="slot_date" type="date" className="w-full border px-3 py-2 rounded-lg text-sm" required />
             </div>
-            <button type="submit" className="w-full bg-[#E8A0B0] text-white rounded-lg py-2 h-[38px] text-sm font-bold hover:bg-[#D48A9A] transition-colors lg:col-span-4 mt-2">
+            <button type="submit" className="w-full bg-[#E8A0B0] text-white rounded-lg py-2 h-[38px] text-sm font-bold hover:bg-[#D48A9A] transition-colors sm:col-span-2 md:col-span-3 lg:col-span-5 mt-2">
               Add Slot to Schedule
             </button>
           </form>
@@ -144,7 +144,7 @@ export default function AdminSlotsPage() {
                     <span className="bg-red-100 text-red-800 font-bold px-4 py-2 rounded-lg rotate-[-5deg] tracking-widest uppercase">Disabled</span>
                   </div>
                 )}
-                <div className="flex justify-between items-start z-20">
+                <div className="flex flex-col sm:flex-row justify-between items-start gap-4 z-20 w-full">
                   <div className="flex flex-col gap-2">
                     <h3 className="text-xl font-bold font-playfair text-[#2C1A1D]">{slot.label}</h3>
                     <p className="text-sm text-[#777777]">Date: {slot.slot_date} | Cut-off: {slot.cutoff_time}</p>
@@ -156,7 +156,7 @@ export default function AdminSlotsPage() {
                     </div>
                   </div>
                   
-                  <div className="flex gap-2 relative z-20">
+                  <div className="flex gap-2 relative z-20 self-end sm:self-start mt-2 sm:mt-0">
                     <button 
                       onClick={() => setEditingSlot(slot)}
                       className="p-3 rounded-xl transition-all bg-amber-50 text-amber-700 hover:bg-amber-100"

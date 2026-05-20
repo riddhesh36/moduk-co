@@ -51,12 +51,12 @@ export default async function AdminOrderInbox() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start md:items-center gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-playfair font-bold text-[#2C1A1D]">Order Management</h1>
           <p className="text-[#777777] mt-1">Real-time overview of your incoming orders and daily targets.</p>
         </div>
-        <button className="bg-[#C4617A] text-white px-5 py-2 rounded-lg font-semibold shadow-sm hover:bg-[#C4617A]/90">
+        <button className="bg-[#C4617A] text-white px-5 py-2 rounded-lg font-semibold shadow-sm hover:bg-[#C4617A]/90 self-start sm:self-auto">
           Export CSV
         </button>
       </div>
@@ -92,8 +92,52 @@ export default async function AdminOrderInbox() {
         </div>
       </div>
 
-      {/* Data Table */}
-      <div className="bg-white border text-sm border-[#FDF0F3] rounded-xl overflow-hidden shadow-sm">
+      {/* Mobile Card List */}
+      <div className="block md:hidden space-y-4 mb-6">
+        {orders.length === 0 && (
+          <div className="px-6 py-10 text-center text-[#777777] bg-white border border-[#FDF0F3] rounded-xl">
+            No orders found in the database.
+          </div>
+        )}
+        {orders.map(order => (
+          <div key={order.id} className="bg-white border border-[#FDF0F3] rounded-xl p-5 shadow-sm space-y-3">
+            <div className="flex justify-between items-start">
+              <div>
+                <span className="font-mono font-bold text-[#C4617A] text-sm">{order.display_id}</span>
+                {order.payment_method === 'cod' && (
+                  <span className="ml-2 bg-yellow-100 text-yellow-800 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                    COD
+                  </span>
+                )}
+              </div>
+              <span className="font-semibold text-[#C4617A]">₹{order.total_amount}</span>
+            </div>
+
+            <div className="text-sm border-t border-[#FDF0F3] pt-2">
+              <div className="font-bold text-[#2C1A1D]">{order.customer_name}</div>
+              <div className="text-xs text-[#777777]">{order.customer_mobile}</div>
+            </div>
+
+            <div className="text-xs text-[#777777] bg-[#FDF8F0]/50 p-2 rounded-lg">
+              <span className="font-semibold text-[#2C1A1D]">Items: </span>
+              {order.items.map((it: { qty: number; name: string }) => `${it.qty}x ${it.name}`).join(", ")}
+            </div>
+
+            <div className="text-xs text-[#777777] flex justify-between items-center border-t border-[#FDF0F3] pt-2">
+              <div>
+                <span className="font-semibold text-[#2C1A1D]">Slot:</span> {order.slot_id}
+                <div className="text-[10px] text-[#777777] mt-0.5">{order.slot_date}</div>
+              </div>
+              <div>
+                <OrderActionButtons orderId={order.id} status={order.status} />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop Data Table */}
+      <div className="hidden md:block bg-white border text-sm border-[#FDF0F3] rounded-xl overflow-hidden shadow-sm">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-[#FDF8F0] text-[#777777] uppercase tracking-wider text-xs border-b border-[#FDF0F3]">
