@@ -30,20 +30,20 @@ export function DeliveryAdvisoryModal() {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop with blur */}
-      <div 
+      <div
         className="absolute inset-0 bg-[#2C1A1D]/60 backdrop-blur-sm transition-opacity duration-300"
         onClick={handleClose}
       />
 
       {/* Modal Dialog Container */}
       <div className="relative bg-white w-full max-w-lg rounded-2xl md:rounded-3xl shadow-[0_20px_50px_rgba(44,26,29,0.15)] border border-[#FDF0F3] overflow-hidden transform transition-all duration-300 scale-100 animate-in fade-in zoom-in-95 duration-200">
-        
+
         {/* Decorative Top Accent Bar */}
         <div className="h-2 bg-[#C4617A] w-full" />
 
         {/* Content Section */}
         <div className="p-6 sm:p-8 md:p-10 space-y-6">
-          
+
           {/* Header */}
           <div className="text-center space-y-2">
             <h2 className="text-2xl sm:text-3xl font-playfair font-bold text-[#2C1A1D]">
@@ -56,7 +56,7 @@ export function DeliveryAdvisoryModal() {
 
           {/* Rule Cards Grid */}
           <div className="space-y-4 pt-2">
-            
+
             {/* Rule 1 */}
             <div className="flex gap-4 items-start p-4 rounded-xl bg-[#FDF8F0] border border-[#FDF0F3] hover:bg-[#FDF8F0]/80 transition-colors">
               <div className="flex-shrink-0 p-2.5 rounded-lg bg-[#FDF0F3] text-[#C4617A]">
@@ -87,7 +87,7 @@ export function DeliveryAdvisoryModal() {
               </div>
             </div>
 
-            {/* Rule 3 */}
+            {/* Rule 33 */}
             <div className="flex gap-4 items-start p-4 rounded-xl bg-[#FDF8F0] border border-[#FDF0F3] hover:bg-[#FDF8F0]/80 transition-colors">
               <div className="flex-shrink-0 p-2.5 rounded-lg bg-[#FDF0F3] text-[#C4617A]">
                 <Clock size={20} className="stroke-[2.25]" />
