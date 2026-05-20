@@ -42,6 +42,22 @@ export async function updateOrderStatus(orderId: string, newStatus: string) {
   return { success: true };
 }
 
+export async function deleteOrder(orderId: string) {
+  const supabase = getSupabase();
+
+  const { error } = await supabase
+    .from('orders')
+    .delete()
+    .eq('id', orderId);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath('/admin');
+  return { success: true };
+}
+
 export async function updateSlotAction(slotId: string, updates: Record<string, unknown>) {
   const supabase = getSupabase();
   

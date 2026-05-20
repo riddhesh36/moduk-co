@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, ChevronRight, Home, MessageCircle, RefreshCw, Clock } from "lucide-react";
+import { CheckCircle2, ChevronRight, Home, RefreshCw, Clock } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
@@ -109,12 +109,8 @@ export default function OrderSuccessPage({ params }: { params: { id: string } })
           </div>
         </div>
 
-        <div className="flex items-center gap-4 bg-gray-50 text-gray-800 p-4 rounded-lg border border-gray-200 mb-8 text-left text-sm max-w-sm mx-auto">
-          <MessageCircle size={24} className="shrink-0 text-gray-600" />
-          <p>
-            We&apos;ve sent a confirmation message with your receipt to your WhatsApp.
-          </p>
-        </div>
+
+
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link href="/" passHref>

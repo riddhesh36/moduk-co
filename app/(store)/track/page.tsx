@@ -101,7 +101,7 @@ export default function TrackOrdersPage() {
   return (
     <div className="w-full bg-cream min-h-screen py-16 px-6">
       <div className="max-w-4xl mx-auto">
-        
+
         {step === "mobile" && (
           <div className="max-w-md mx-auto bg-white p-8 md:p-10 rounded-3xl shadow-xl border border-rose/10 text-center">
             <div className="w-16 h-16 bg-rose/10 text-rose rounded-full flex items-center justify-center mx-auto mb-6">
@@ -109,12 +109,12 @@ export default function TrackOrdersPage() {
             </div>
             <h1 className="text-3xl font-playfair font-bold text-dark mb-2">Track Your Orders</h1>
             <p className="text-text-muted mb-8">Enter your mobile number used during checkout to view your orders.</p>
-            
+
             <form onSubmit={handleSendOTP} className="space-y-4">
               <div className="text-left">
                 <label className="text-xs font-bold text-text-muted uppercase tracking-wider mb-1.5 block">Mobile Number</label>
-                <input 
-                  type="tel" 
+                <input
+                  type="tel"
                   value={mobile}
                   onChange={(e) => setMobile(e.target.value)}
                   placeholder="e.g. 9876543210"
@@ -124,7 +124,7 @@ export default function TrackOrdersPage() {
               </div>
               {error && <p className="text-rose text-sm font-medium">{error}</p>}
               <Button size="lg" className="w-full h-14 shadow-lg shadow-rose/20 text-base" disabled={loading}>
-                {loading ? "Sending..." : "Send OTP via WhatsApp"}
+                {loading ? "Sending..." : "Send OTP via SMS"}
               </Button>
             </form>
           </div>
@@ -140,12 +140,12 @@ export default function TrackOrdersPage() {
             </div>
             <h1 className="text-3xl font-playfair font-bold text-dark mb-2">Verify OTP</h1>
             <p className="text-text-muted mb-8">We&apos;ve sent a 6-digit code to <span className="font-bold text-dark">{mobile}</span></p>
-            
+
             <form onSubmit={handleVerifyOTP} className="space-y-4">
               <div className="text-left">
                 <label className="text-xs font-bold text-text-muted uppercase tracking-wider mb-1.5 block">One-Time Password</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
                   placeholder="000000"
@@ -158,9 +158,9 @@ export default function TrackOrdersPage() {
               <Button size="lg" className="w-full h-14 shadow-lg shadow-rose/20 text-base" disabled={loading}>
                 {loading ? "Verifying..." : "Confirm & View Orders"}
               </Button>
-              <button 
-                type="button" 
-                onClick={() => handleSendOTP()} 
+              <button
+                type="button"
+                onClick={() => handleSendOTP()}
                 disabled={timer > 0 || loading}
                 className="text-sm text-rose font-semibold hover:underline mt-4 block mx-auto disabled:text-text-muted disabled:no-underline"
               >
@@ -177,7 +177,7 @@ export default function TrackOrdersPage() {
                 <h1 className="text-4xl font-playfair font-bold text-dark mb-2">My Orders</h1>
                 <p className="text-text-muted">Welcome back! Showing orders for <span className="font-bold text-dark">{mobile}</span></p>
               </div>
-              <button 
+              <button
                 onClick={handleLogout}
                 className="flex items-center gap-2 text-text-muted hover:text-rose transition-colors text-sm font-semibold py-2 px-4 border border-dark/5 rounded-full hover:bg-rose/5"
               >
@@ -196,12 +196,12 @@ export default function TrackOrdersPage() {
                         </span>
                         <span className="text-text-muted text-sm font-medium">Order #{order.display_id}</span>
                       </div>
-                      
+
                       <div className="space-y-4 mb-6">
                         {order.items?.map((item: { product?: { name: string; price: number }; quantity: number }, idx: number) => (
                           <div key={idx} className="flex items-center gap-4">
                             <div className="w-12 h-12 bg-cream rounded-xl flex items-center justify-center shrink-0">
-                               <ShoppingBag size={20} className="text-rose/50" />
+                              <ShoppingBag size={20} className="text-rose/50" />
                             </div>
                             <div>
                               <div className="font-bold text-dark">{item.quantity}x {item.product?.name || 'Box of Joy'}</div>

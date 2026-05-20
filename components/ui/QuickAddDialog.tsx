@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, Minus, ShoppingCart } from "lucide-react";
 import { Button } from "./button";
 import { SlotSelector } from "./SlotSelector";
+import { Toast } from "./Toast";
 import { type Product, type Slot } from "@/types";
 import { useCart } from "@/components/cart/CartContext";
 import { AlertDialog } from "./AlertDialog";
@@ -28,6 +29,8 @@ export function QuickAddDialog({
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
   const [showValidationAlert, setShowValidationAlert] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
 
   if (!product) return null;
 
@@ -44,6 +47,8 @@ export function QuickAddDialog({
       selectedDate,
     });
     
+    setToastMessage(`${product.name} added to cart!`);
+    setShowToast(true);
     onClose();
   };
 
@@ -144,6 +149,11 @@ export function QuickAddDialog({
       onClose={() => setShowValidationAlert(false)}
       title="Slot Required"
       description="Please select a delivery slot before adding items to your cart."
+    />
+    <Toast 
+      message={toastMessage}
+      isVisible={showToast}
+      onClose={() => setShowToast(false)}
     />
     </>
   );

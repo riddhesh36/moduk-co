@@ -1,9 +1,18 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { Package, Banknote, ShoppingBag } from "lucide-react";
+import { Package, Banknote, ShoppingBag, MapPin } from "lucide-react";
 import OrderActionButtons from "@/components/admin/OrderActionButtons";
 
 export const dynamic = "force-dynamic";
+
+// Helper to extract item display text from order items JSONB
+// Items can be stored as { product: { name }, quantity } (from cart) or { name, qty } (legacy)
+function formatItemText(item: Record<string, unknown>): string {
+  const qty = (item.quantity as number) || (item.qty as number) || 1;
+  const product = item.product as Record<string, unknown> | undefined;
+  const name = product?.name || (item.name as string) || 'Unknown Item';
+  return `${qty}x ${name}`;
+}
 
 export default async function AdminOrderInbox() {
   const cookieStore = cookies();
@@ -38,13 +47,15 @@ export default async function AdminOrderInbox() {
   // Classic = 5, Delight = 7, Celebration = 11
   let totalModaks = 0;
   todayOrders.filter(o => o.status !== 'cancelled').forEach(order => {
-    order.items.forEach((item: { product_id: string; name: string; qty: number }) => {
-      if (item.product_id === 'classic-box' || item.name.toLowerCase().includes('classic')) {
-        totalModaks += (5 * item.qty);
-      } else if (item.product_id === 'delight-box' || item.name.toLowerCase().includes('delight')) {
-        totalModaks += (7 * item.qty);
-      } else if (item.product_id === 'celebration-box' || item.name.toLowerCase().includes('celebration')) {
-        totalModaks += (11 * item.qty);
+    order.items.forEach((item: { product_id: string; name: string; qty: number; product?: { name: string }; quantity?: number }) => {
+      const itemName = item.product?.name || item.name || '';
+      const itemQty = item.quantity || item.qty || 1;
+      if (item.product_id === 'classic-box' || itemName.toLowerCase().includes('classic')) {
+        totalModaks += (5 * itemQty);
+      } else if (item.product_id === 'delight-box' || itemName.toLowerCase().includes('delight')) {
+        totalModaks += (7 * itemQty);
+      } else if (item.product_id === 'celebration-box' || itemName.toLowerCase().includes('celebration')) {
+        totalModaks += (11 * itemQty);
       }
     });
   });
@@ -120,7 +131,24 @@ export default async function AdminOrderInbox() {
 
             <div className="text-xs text-[#777777] bg-[#FDF8F0]/50 p-2 rounded-lg">
               <span className="font-semibold text-[#2C1A1D]">Items: </span>
-              {order.items.map((it: { qty: number; name: string }) => `${it.qty}x ${it.name}`).join(", ")}
+              {order.items.map((it: Record<string, unknown>) => formatItemText(it)).join(", ")}
+            </div>
+
+            {/* Delivery Address */}
+            <div className="text-xs text-[#777777] bg-blue-50/50 p-2 rounded-lg">
+              <div className="flex items-center gap-1 mb-1">
+                <MapPin size={12} className="text-blue-500 shrink-0" />
+                <span className="font-semibold text-[#2C1A1D]">Delivery Address</span>
+              </div>
+              <div className="text-[11px] leading-relaxed">
+                {order.address_line1}
+                {order.address_area && order.address_area !== 'N/A' && !order.address_area.startsWith('Notes:') && `, ${order.address_area}`}
+                {order.address_city && `, ${order.address_city}`}
+                {order.address_pincode && ` - ${order.address_pincode}`}
+              </div>
+              {order.order_notes && (
+                <div className="mt-1 text-[11px] italic text-[#555]">📝 {order.order_notes}</div>
+              )}
             </div>
 
             <div className="text-xs text-[#777777] flex justify-between items-center border-t border-[#FDF0F3] pt-2">
@@ -144,6 +172,7 @@ export default async function AdminOrderInbox() {
               <th className="px-6 py-4 font-semibold">Order ID</th>
               <th className="px-6 py-4 font-semibold">Customer</th>
               <th className="px-6 py-4 font-semibold">Items</th>
+              <th className="px-6 py-4 font-semibold">Delivery Address</th>
               <th className="px-6 py-4 font-semibold">Slot Info</th>
               <th className="px-6 py-4 font-semibold">Total</th>
               <th className="px-6 py-4 font-semibold">Action</th>
@@ -152,7 +181,7 @@ export default async function AdminOrderInbox() {
           <tbody className="divide-y divide-[#FDF0F3]">
             {orders.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-6 py-10 text-center text-[#777777]">No orders found in the database.</td>
+                <td colSpan={7} className="px-6 py-10 text-center text-[#777777]">No orders found in the database.</td>
               </tr>
             )}
             {orders.map(order => (
@@ -165,14 +194,23 @@ export default async function AdminOrderInbox() {
                   <div className="text-xs text-[#777777] mt-0.5">{order.customer_mobile}</div>
                 </td>
                 <td className="px-6 py-4 text-[#777777]">
-                  {order.items.map((it: { qty: number; name: string }) => `${it.qty}x ${it.name}`).join(", ")}
+                  {order.items.map((it: Record<string, unknown>) => formatItemText(it)).join(", ")}
+                </td>
+                <td className="px-6 py-4 text-[#777777] max-w-[200px]">
+                  <div className="text-xs leading-relaxed">
+                    {order.address_line1}
+                    {order.address_pincode && ` - ${order.address_pincode}`}
+                  </div>
+                  {order.order_notes && (
+                    <div className="text-[10px] italic text-[#999] mt-1">📝 {order.order_notes}</div>
+                  )}
                 </td>
                 <td className="px-6 py-4 text-[#777777]">
                   <div className="font-medium text-[#2C1A1D]">{order.slot_id}</div>
                   <div className="text-xs mt-0.5">{order.slot_date}</div>
                 </td>
                 <td className="px-6 py-4 font-semibold text-[#C4617A]">₹{order.total_amount}</td>
-                <td className="px-6 py-4 flex items-center gap-2">
+                <td className="px-6 py-4">
                   <OrderActionButtons orderId={order.id} status={order.status} />
                 </td>
               </tr>
