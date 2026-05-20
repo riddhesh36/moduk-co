@@ -2,6 +2,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { CartProvider } from "@/components/cart/CartContext";
 import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
+import { DeliveryAdvisoryModal } from "@/components/ui/DeliveryAdvisoryModal";
 
 export default function StoreLayout({
   children,
@@ -16,6 +17,7 @@ export default function StoreLayout({
       </main>
       <Footer />
       <WhatsAppButton variant="floating" />
+      <DeliveryAdvisoryModal />
     </CartProvider>
   );
 }
