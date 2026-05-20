@@ -13,6 +13,6 @@ ALTER TABLE public.login_otps ENABLE ROW LEVEL SECURITY;
 -- Allow service role (server-side) to manage OTPs
 CREATE POLICY "Allow server-side access to login_otps"
 ON public.login_otps FOR ALL
-TO authenticated, service_role
+TO anon, authenticated, service_role
 USING (true)
 WITH CHECK (true);
