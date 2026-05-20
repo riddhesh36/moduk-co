@@ -36,16 +36,16 @@ export function DeliveryAdvisoryModal() {
       />
 
       {/* Modal Dialog Container */}
-      <div className="relative bg-white w-full max-w-lg rounded-2xl md:rounded-3xl shadow-[0_20px_50px_rgba(44,26,29,0.15)] border border-[#FDF0F3] overflow-hidden transform transition-all duration-300 scale-100 animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative bg-white w-full max-w-lg rounded-2xl md:rounded-3xl shadow-[0_20px_50px_rgba(44,26,29,0.15)] border border-[#FDF0F3] flex flex-col max-h-[90vh] md:max-h-[85vh] transform transition-all duration-300 scale-100 animate-in fade-in zoom-in-95 duration-200">
 
         {/* Decorative Top Accent Bar */}
-        <div className="h-2 bg-[#C4617A] w-full" />
+        <div className="h-2 bg-[#C4617A] w-full flex-shrink-0" />
 
         {/* Content Section */}
-        <div className="p-6 sm:p-8 md:p-10 space-y-6">
+        <div className="flex flex-col h-full overflow-hidden p-6 sm:p-8">
 
           {/* Header */}
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-2 pb-4 border-b border-[#FDF0F3] flex-shrink-0">
             <h2 className="text-2xl sm:text-3xl font-playfair font-bold text-[#2C1A1D]">
               Delivery Information
             </h2>
@@ -54,8 +54,8 @@ export function DeliveryAdvisoryModal() {
             </p>
           </div>
 
-          {/* Rule Cards Grid */}
-          <div className="space-y-4 pt-2">
+          {/* Rule Cards Grid (Scrollable) */}
+          <div className="flex-1 overflow-y-auto space-y-4 py-4 pr-1 -mr-1 scrollbar-thin">
 
             {/* Rule 1 */}
             <div className="flex gap-4 items-start p-4 rounded-xl bg-[#FDF8F0] border border-[#FDF0F3] hover:bg-[#FDF8F0]/80 transition-colors">
@@ -87,7 +87,7 @@ export function DeliveryAdvisoryModal() {
               </div>
             </div>
 
-            {/* Rule 33 */}
+            {/* Rule 3 */}
             <div className="flex gap-4 items-start p-4 rounded-xl bg-[#FDF8F0] border border-[#FDF0F3] hover:bg-[#FDF8F0]/80 transition-colors">
               <div className="flex-shrink-0 p-2.5 rounded-lg bg-[#FDF0F3] text-[#C4617A]">
                 <Clock size={20} className="stroke-[2.25]" />
@@ -120,7 +120,7 @@ export function DeliveryAdvisoryModal() {
           </div>
 
           {/* Action Button */}
-          <div className="pt-2">
+          <div className="pt-4 border-t border-[#FDF0F3] flex-shrink-0">
             <button
               onClick={handleClose}
               className="w-full bg-[#C4617A] text-white hover:bg-[#C4617A]/95 py-3.5 px-6 rounded-xl font-dmsans font-bold tracking-wide transition-all shadow-[0_4px_12px_rgba(196,97,122,0.2)] active:scale-[0.98]"
