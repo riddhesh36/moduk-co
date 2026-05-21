@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Product } from "@/types";
 
 export interface CartItem {
@@ -23,6 +23,29 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Load cart items from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("moduk_cart");
+      if (stored) {
+        try {
+          setItems(JSON.parse(stored));
+        } catch (e) {
+          console.error("Failed to parse cart items from localStorage:", e);
+        }
+      }
+      setIsLoaded(true);
+    }
+  }, []);
+
+  // Save cart items to localStorage on change
+  useEffect(() => {
+    if (isLoaded && typeof window !== "undefined") {
+      localStorage.setItem("moduk_cart", JSON.stringify(items));
+    }
+  }, [items, isLoaded]);
 
   const addToCart = (newItem: CartItem) => {
     setItems((prev) => {

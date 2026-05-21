@@ -6,6 +6,11 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "mock-anon-key"
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
+export const supabaseAdmin = createClient(
+  supabaseUrl,
+  process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseKey
+);
+
 // Usage:
 // Because this is a mock for phase 1 development without keys, 
 // database operations will fail or return empty if live query is executed.

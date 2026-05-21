@@ -44,7 +44,18 @@ export default async function AdminOrdersPage() {
           <div key={order.id} className="bg-white border border-dark/5 rounded-xl p-5 shadow-sm space-y-3">
             <div className="flex justify-between items-start">
               <div>
-                <span className="font-mono font-bold text-rose text-sm">{order.display_id}</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono font-bold text-rose text-sm">{order.display_id}</span>
+                  {order.delivery_option === "pickup" ? (
+                    <span className="px-1.5 py-0.5 rounded bg-green-50 text-green-700 border border-green-200 text-[9px] font-bold uppercase">
+                      Pickup
+                    </span>
+                  ) : (
+                    <span className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 text-[9px] font-bold uppercase">
+                      Delivery
+                    </span>
+                  )}
+                </div>
                 <div className="text-[10px] text-text-muted mt-0.5">
                   {new Date(order.created_at).toLocaleString()}
                 </div>
@@ -68,7 +79,7 @@ export default async function AdminOrdersPage() {
 
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#FDF0F3] pt-3">
               <div className="flex flex-wrap gap-2 items-center">
-                <PaymentStatusBadge status={order.payment_status} orderId={order.id} />
+                <PaymentStatusBadge status={order.payment_status} orderId={order.id} paymentMethod={order.payment_method} />
                 <OrderStatusSelector orderId={order.id} currentStatus={order.status} />
               </div>
               <div>
@@ -98,7 +109,18 @@ export default async function AdminOrdersPage() {
               {orders?.map((order) => (
                 <tr key={order.id} className="hover:bg-cream/20 transition-colors">
                   <td className="px-6 py-4">
-                    <span className="font-mono font-bold text-rose">{order.display_id}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-bold text-rose">{order.display_id}</span>
+                      {order.delivery_option === "pickup" ? (
+                        <span className="px-1.5 py-0.5 rounded bg-green-50 text-green-700 border border-green-200 text-[9px] font-bold uppercase">
+                          Pickup
+                        </span>
+                      ) : (
+                        <span className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 text-[9px] font-bold uppercase">
+                          Delivery
+                        </span>
+                      )}
+                    </div>
                     <div className="text-[10px] text-text-muted mt-0.5">
                       {new Date(order.created_at).toLocaleString()}
                     </div>
@@ -117,7 +139,7 @@ export default async function AdminOrdersPage() {
                   </td>
                   <td className="px-6 py-4 font-bold text-dark">₹{order.total_amount}</td>
                   <td className="px-6 py-4">
-                    <PaymentStatusBadge status={order.payment_status} orderId={order.id} />
+                    <PaymentStatusBadge status={order.payment_status} orderId={order.id} paymentMethod={order.payment_method} />
                   </td>
                   <td className="px-6 py-4">
                     <OrderStatusSelector orderId={order.id} currentStatus={order.status} />
@@ -144,8 +166,22 @@ export default async function AdminOrdersPage() {
   );
 }
 
-function PaymentStatusBadge({ status, orderId }: { status: string, orderId: string }) {
+function PaymentStatusBadge({ status, orderId, paymentMethod }: { status: string, orderId: string, paymentMethod: string }) {
   const isPaid = status === 'paid' || status === 'successful';
+  const isRazorpay = paymentMethod === 'razorpay';
+  
+  if (isRazorpay) {
+    return (
+      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${
+        isPaid 
+          ? "bg-green-50 text-green-700 border-green-200" 
+          : "bg-amber-50 text-amber-700 border-amber-200"
+      }`}>
+        {isPaid ? "PAID (RAZORPAY)" : "UNPAID (RAZORPAY)"}
+      </span>
+    );
+  }
+
   return (
     <form action={async () => {
       "use server";

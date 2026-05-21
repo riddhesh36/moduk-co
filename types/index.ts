@@ -1,6 +1,15 @@
-export type PaymentMethod = "upi" | "cod";
-export type PaymentStatus = "paid" | "pending_cod" | "failed";
-export type OrderStatus = "needs_verification" | "pending" | "confirmed" | "dispatched" | "delivered" | "cancelled";
+export type PaymentMethod = "upi" | "cod" | "razorpay";
+export type PaymentStatus = "paid" | "pending_cod" | "failed" | "pending";
+export type OrderStatus = 
+  | "needs_verification" 
+  | "pending" 
+  | "confirmed" 
+  | "dispatched" 
+  | "delivered" 
+  | "cancelled"
+  | "payment_pending"
+  | "cod_pending"
+  | "payment_failed";
 
 export interface Address {
   line1: string;
@@ -32,11 +41,42 @@ export interface Order {
   payment_method: PaymentMethod;
   payment_status: PaymentStatus;
   razorpay_order_id: string | null;
+  payment_link_id?: string | null;
+  payment_id?: string | null;
   wa_opt_in: boolean;
   order_notes: string;
   status: OrderStatus;
   total_amount: number;
+  coupon_id?: string | null;
+  discount_amount?: number;
+  original_total?: number;
+  final_total?: number;
+  delivery_option?: 'delivery' | 'pickup';
   delivery_slots?: { label: string };
+}
+
+export interface Coupon {
+  id: string;
+  code: string;
+  type: 'percentage' | 'flat';
+  value: number;
+  min_order_amount: number;
+  max_uses: number | null;
+  uses_count: number;
+  valid_from: string;
+  valid_until: string | null;
+  is_first_time_only: boolean;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface CouponUse {
+  id: string;
+  coupon_id: string;
+  order_id: string;
+  user_phone: string;
+  discount_applied: number;
+  used_at: string;
 }
 
 export interface Slot {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Playfair_Display, DM_Sans } from "next/font/google";
 import "./globals.css";
+import { CookieConsent } from "@/components/layout/CookieConsent";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -31,6 +32,7 @@ export default function RootLayout({
         className={`${playfair.variable} ${dmSans.variable} font-dmsans antialiased text-text-body bg-cream min-h-screen flex flex-col`}
       >
         {children}
+        <CookieConsent />
       </body>
     </html>
   );

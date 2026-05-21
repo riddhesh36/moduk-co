@@ -120,6 +120,11 @@ export default async function AdminOrderInbox() {
                     COD
                   </span>
                 )}
+                {order.payment_method === 'razorpay' && (
+                  <span className="ml-2 bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                    RAZORPAY
+                  </span>
+                )}
               </div>
               <span className="font-semibold text-[#C4617A]">₹{order.total_amount}</span>
             </div>
@@ -188,6 +193,7 @@ export default async function AdminOrderInbox() {
               <tr key={order.id} className="hover:bg-[#FDF8F0]/30 transition-colors">
                 <td className="px-6 py-4 font-mono font-medium">{order.display_id}
                   {order.payment_method === 'cod' && <span className="ml-2 bg-yellow-100 text-yellow-800 text-[10px] px-2 py-0.5 rounded-full font-bold">COD</span>}
+                  {order.payment_method === 'razorpay' && <span className="ml-2 bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded-full font-bold">RAZORPAY</span>}
                 </td>
                 <td className="px-6 py-4 font-medium">
                   {order.customer_name}

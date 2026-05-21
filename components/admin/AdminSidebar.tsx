@@ -10,7 +10,8 @@ import {
   ChevronRight, 
   LayoutDashboard,
   LogOut,
-  X
+  X,
+  Ticket
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +20,7 @@ const menuItems = [
   { name: "Orders", href: "/admin/orders", icon: ShoppingBag },
   { name: "Products", href: "/admin/products", icon: Package },
   { name: "Delivery Slots", href: "/admin/slots", icon: Calendar },
+  { name: "Coupons", href: "/admin/coupons", icon: Ticket },
 ];
 
 interface AdminSidebarProps {

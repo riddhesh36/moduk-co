@@ -76,7 +76,18 @@ export default function OrderItemsModal({ order }: { order: Order }) {
                     <p className="text-xs text-[#777777]">{order.slot_date}</p>
                   </div>
                   <div className="border-t border-[#FDF0F3] pt-2">
-                    <span className="font-semibold text-xs text-[#777777]">Address:</span>
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold text-xs text-[#777777]">Address:</span>
+                      {order.delivery_option === "pickup" ? (
+                        <span className="px-1.5 py-0.5 rounded bg-green-50 text-green-700 border border-green-200 text-[9px] font-bold uppercase">
+                          Self-Pickup
+                        </span>
+                      ) : (
+                        <span className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 text-[9px] font-bold uppercase">
+                          Home Delivery
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-[#2C1A1D] mt-0.5 leading-relaxed">
                       {order.address_line1}, {order.address_pincode}
                     </p>

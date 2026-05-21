@@ -3,6 +3,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
+import { supabaseAdmin } from "@/lib/supabase";
 
 function getSupabase() {
   const cookieStore = cookies();
@@ -19,22 +20,76 @@ function getSupabase() {
 }
 
 export async function updateOrderStatus(orderId: string, newStatus: string) {
-  const supabase = getSupabase();
+  // Use supabaseAdmin to bypass RLS policies on orders/coupons/coupon_uses
+  const supabase = supabaseAdmin;
+
+  // Fetch order to check details
+  const { data: order, error: fetchErr } = await supabase
+    .from('orders')
+    .select('*')
+    .eq('id', orderId)
+    .single();
+
+  if (fetchErr || !order) {
+    return { error: fetchErr?.message || "Order not found" };
+  }
 
   const updates: Record<string, string> = { status: newStatus };
   
-  // If moving from needs_verification -> pending, mark payment as successful
-  if (newStatus === "pending") {
-    updates.payment_status = "successful";
+  // If confirming an order, set payment status appropriately
+  if (newStatus === "confirmed") {
+    if (order.payment_method === "razorpay" || order.payment_method === "upi") {
+      updates.payment_status = "paid";
+    }
   }
 
-  const { error } = await supabase
+  const { error: updateErr } = await supabase
     .from('orders')
     .update(updates)
     .eq('id', orderId);
 
-  if (error) {
-    return { error: error.message };
+  if (updateErr) {
+    return { error: updateErr.message };
+  }
+
+  // Record coupon usage when order moves to 'confirmed'
+  if (newStatus === "confirmed" && order.coupon_id) {
+    try {
+      // Check if coupon use already logged for this order to prevent duplicates
+      const { data: existingUse } = await supabase
+        .from('coupon_uses')
+        .select('id')
+        .eq('order_id', orderId)
+        .maybeSingle();
+
+      if (!existingUse) {
+        // Insert coupon_uses record
+        const { error: insertUseErr } = await supabase.from('coupon_uses').insert([{
+          coupon_id: order.coupon_id,
+          order_id: orderId,
+          user_phone: order.customer_mobile,
+          discount_applied: order.discount_amount || 0,
+        }]);
+
+        if (!insertUseErr) {
+          // Increment uses_count on the coupon
+          const { data: coupon } = await supabase
+            .from('coupons')
+            .select('uses_count')
+            .eq('id', order.coupon_id)
+            .single();
+
+          if (coupon) {
+            await supabase
+              .from('coupons')
+              .update({ uses_count: (coupon.uses_count || 0) + 1 })
+              .eq('id', order.coupon_id);
+          }
+        }
+      }
+    } catch (couponErr) {
+      console.error("Failed to record coupon usage:", couponErr);
+    }
   }
 
   // Revalidate the admin dashboard so changes reflect immediately

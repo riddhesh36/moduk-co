@@ -24,28 +24,40 @@ export default function OrderActionButtons({ orderId, status }: { orderId: strin
   };
 
   const statusOptions = [
-    { value: "needs_verification", label: "Needs Verification", color: "bg-yellow-100 text-yellow-800" },
-    { value: "pending", label: "Pending", color: "bg-orange-100 text-orange-800" },
+    { value: "payment_pending", label: "Payment Pending", color: "bg-amber-100 text-amber-800" },
+    { value: "cod_pending", label: "COD Pending", color: "bg-orange-100 text-orange-800" },
+    { value: "confirmed", label: "Confirmed", color: "bg-green-100 text-green-800" },
     { value: "dispatched", label: "Dispatched", color: "bg-blue-100 text-blue-800" },
-    { value: "delivered", label: "Delivered", color: "bg-green-100 text-green-800" },
+    { value: "delivered", label: "Delivered", color: "bg-emerald-100 text-emerald-800" },
     { value: "cancelled", label: "Cancelled", color: "bg-red-100 text-red-800" },
+    { value: "payment_failed", label: "Payment Failed", color: "bg-rose-100 text-rose-800" },
+    { value: "needs_verification", label: "Needs Verification", color: "bg-yellow-100 text-yellow-800" },
+    { value: "pending", label: "Pending", color: "bg-gray-100 text-gray-800" },
   ];
 
   // Primary action button based on current status
   const renderPrimaryAction = () => {
-    if (status === "needs_verification") {
+    if (status === "payment_pending") {
+      return (
+        <span className="flex items-center gap-1.5 text-amber-600 bg-amber-50 border border-amber-200 font-semibold text-[11px] py-1 px-2.5 rounded-full whitespace-nowrap">
+          <Clock size={12} className="animate-pulse" /> Awaiting Payment
+        </span>
+      );
+    }
+
+    if (status === "cod_pending") {
       return (
         <button 
-          onClick={() => handleUpdate("pending")}
+          onClick={() => handleUpdate("confirmed")}
           disabled={isPending}
           className="flex items-center gap-2 bg-[#C4617A] text-white py-1.5 px-3 rounded text-xs font-semibold hover:bg-[#C4617A]/90 whitespace-nowrap disabled:opacity-50"
         >
-          {isPending ? "Updating..." : "Verify Payment"}
+          {isPending ? "Confirming..." : "Confirm COD Order"}
         </button>
       );
     }
 
-    if (status === "pending") {
+    if (status === "confirmed" || status === "pending") {
       return (
         <button 
           onClick={() => handleUpdate("dispatched")}
@@ -82,6 +94,26 @@ export default function OrderActionButtons({ orderId, status }: { orderId: strin
         <span className="flex items-center gap-2 text-red-500 font-semibold text-xs py-1.5 px-3 whitespace-nowrap">
           <X size={14} /> Cancelled
         </span>
+      );
+    }
+
+    if (status === "payment_failed") {
+      return (
+        <span className="flex items-center gap-2 text-red-600 font-semibold text-xs py-1.5 px-3 whitespace-nowrap">
+          <X size={14} /> Payment Failed
+        </span>
+      );
+    }
+
+    if (status === "needs_verification") {
+      return (
+        <button 
+          onClick={() => handleUpdate("confirmed")}
+          disabled={isPending}
+          className="flex items-center gap-2 bg-[#C4617A] text-white py-1.5 px-3 rounded text-xs font-semibold hover:bg-[#C4617A]/90 whitespace-nowrap disabled:opacity-50"
+        >
+          {isPending ? "Updating..." : "Verify Payment"}
+        </button>
       );
     }
 
