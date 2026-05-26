@@ -167,9 +167,10 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ success: true, event });
-  } catch (err: any) {
-    console.error("Webhook processing error:", err);
+  } catch (err: unknown) {
+    const error = err as Error;
+    console.error("Webhook processing error:", error);
     // Always return 200/204 to Razorpay for unexpected errors to stop retries, but log it
-    return NextResponse.json({ error: err.message || "Internal Server Error" }, { status: 200 });
+    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 200 });
   }
 }

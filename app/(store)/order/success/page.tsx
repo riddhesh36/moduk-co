@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState, Suspense } from "react";
 import { getOrder } from "../[id]/actions";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 function SuccessPageContent() {
   const searchParams = useSearchParams();
@@ -78,8 +78,8 @@ function SuccessPageContent() {
         throw new Error(data.error || "Failed to recreate payment link");
       }
       window.location.href = data.payment_url;
-    } catch (err: any) {
-      alert(err.message || "An error occurred while retrying the payment.");
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "An error occurred while retrying the payment.");
     } finally {
       setRetryLoading(false);
     }
@@ -223,7 +223,7 @@ function SuccessPageContent() {
             {order.items && order.items.length > 0 && (
               <div className="border-b border-dark/5 pb-2 flex flex-col gap-2">
                 <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">Items</span>
-                {order.items.map((item: any, idx: number) => (
+                {order.items.map((item: { product?: { name: string; price: number }; quantity: number }, idx: number) => (
                   <div key={idx} className="flex justify-between pl-1">
                     <span className="text-text-body font-medium">
                       {item.product?.name || "Modak"} <span className="text-text-muted text-xs">x{item.quantity}</span>

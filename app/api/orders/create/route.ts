@@ -150,7 +150,7 @@ export async function POST(req: Request) {
         callback_url: `${siteUrl}/order/success?order_id=${displayId}`,
         callback_method: "get"
       });
-    } catch (rzpErr: any) {
+    } catch (rzpErr: unknown) {
       console.error("Razorpay Payment Link creation error:", rzpErr);
       // Update order to payment_failed if link generation fails
       await supabaseAdmin
@@ -158,7 +158,8 @@ export async function POST(req: Request) {
         .update({ status: 'payment_failed', payment_status: 'failed' })
         .eq('id', newOrder.id);
 
-      return NextResponse.json({ error: `Razorpay error: ${rzpErr.description || rzpErr.message || "Failed to create payment link"}` }, { status: 500 });
+      const error = rzpErr as { description?: string; message?: string };
+      return NextResponse.json({ error: `Razorpay error: ${error.description || error.message || "Failed to create payment link"}` }, { status: 500 });
     }
 
     // 5. Update order row with payment_link_id using admin client (bypasses RLS)
@@ -177,8 +178,9 @@ export async function POST(req: Request) {
       payment_url: paymentLink.short_url,
       order_id: displayId
     });
-  } catch (err: any) {
-    console.error("Create Order Route API Error:", err);
-    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
+  } catch (err: unknown) {
+    const error = err as Error;
+    console.error("Create Order Route API Error:", error);
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }

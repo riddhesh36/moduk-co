@@ -34,9 +34,7 @@ export default function CheckoutPage() {
 
   const router = useRouter();
 
-  const paymentMethod = "upi";
   const [loading, setLoading] = useState(false);
-  const [qrModalOpen, setQrModalOpen] = useState(false);
   const [errorAlertOpen, setErrorAlertOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 

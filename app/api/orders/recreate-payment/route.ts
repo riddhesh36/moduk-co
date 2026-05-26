@@ -49,9 +49,10 @@ export async function POST(req: Request) {
         callback_url: `${siteUrl}/order/success?order_id=${order.display_id}`,
         callback_method: "get"
       });
-    } catch (rzpErr: any) {
+    } catch (rzpErr: unknown) {
       console.error("Razorpay Payment Link re-creation error:", rzpErr);
-      return NextResponse.json({ error: `Razorpay error: ${rzpErr.description || rzpErr.message || "Failed to recreate payment link"}` }, { status: 500 });
+      const error = rzpErr as { description?: string; message?: string };
+      return NextResponse.json({ error: `Razorpay error: ${error.description || error.message || "Failed to recreate payment link"}` }, { status: 500 });
     }
 
     // 3. Update order row using admin client (bypasses RLS)
@@ -73,8 +74,9 @@ export async function POST(req: Request) {
     return NextResponse.json({
       payment_url: paymentLink.short_url
     });
-  } catch (err: any) {
-    console.error("Recreate Payment API Error:", err);
-    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
+  } catch (err: unknown) {
+    const error = err as Error;
+    console.error("Recreate Payment API Error:", error);
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }
