@@ -136,7 +136,7 @@ export async function POST(req: Request) {
         description: `Moduk & Co — Order #${displayId}`,
         customer: {
           name: customer_name,
-          contact: `+91${customer_phone}`
+          contact: `+91${customer_phone.replace(/\D/g, '').slice(-10)}`
         },
         notify: {
           sms: true,
@@ -158,8 +158,9 @@ export async function POST(req: Request) {
         .update({ status: 'payment_failed', payment_status: 'failed' })
         .eq('id', newOrder.id);
 
-      const error = rzpErr as { description?: string; message?: string };
-      return NextResponse.json({ error: `Razorpay error: ${error.description || error.message || "Failed to create payment link"}` }, { status: 500 });
+      const errObj = rzpErr as { error?: { description?: string; message?: string }; description?: string; message?: string };
+      const errorMessage = errObj.error?.description || errObj.error?.message || errObj.description || errObj.message || "Failed to create payment link";
+      return NextResponse.json({ error: `Razorpay error: ${errorMessage}` }, { status: 500 });
     }
 
     // 5. Update order row with payment_link_id using admin client (bypasses RLS)

@@ -26,7 +26,7 @@ export async function POST(req: Request) {
     let paymentLink;
     try {
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-      const contactNo = order.customer_mobile.startsWith('+') ? order.customer_mobile : `+91${order.customer_mobile}`;
+      const contactNo = `+91${order.customer_mobile.replace(/\D/g, '').slice(-10)}`;
 
       paymentLink = await razorpay.paymentLink.create({
         amount: Math.round(Number(order.total_amount) * 100), // in paise
@@ -51,8 +51,9 @@ export async function POST(req: Request) {
       });
     } catch (rzpErr: unknown) {
       console.error("Razorpay Payment Link re-creation error:", rzpErr);
-      const error = rzpErr as { description?: string; message?: string };
-      return NextResponse.json({ error: `Razorpay error: ${error.description || error.message || "Failed to recreate payment link"}` }, { status: 500 });
+      const errObj = rzpErr as { error?: { description?: string; message?: string }; description?: string; message?: string };
+      const errorMessage = errObj.error?.description || errObj.error?.message || errObj.description || errObj.message || "Failed to recreate payment link";
+      return NextResponse.json({ error: `Razorpay error: ${errorMessage}` }, { status: 500 });
     }
 
     // 3. Update order row using admin client (bypasses RLS)
