@@ -32,6 +32,25 @@ export function QuickAddDialog({
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 
+  // Track previous isOpen and product.id props to reset state when dialog opens or product changes
+  const [prevIsOpen, setPrevIsOpen] = useState(false);
+  const [prevProductId, setPrevProductId] = useState<string | null>(null);
+
+  if (isOpen !== prevIsOpen || (product && product.id !== prevProductId)) {
+    setPrevIsOpen(isOpen);
+    setPrevProductId(product ? product.id : null);
+    
+    // Only reset state values if the dialog is being opened
+    if (isOpen) {
+      setQuantity(1);
+      setSelectedSlot(null);
+      setSelectedDate("");
+      setShowValidationAlert(false);
+      setShowToast(false);
+      setToastMessage("");
+    }
+  }
+
   if (!product) return null;
 
   const handleAddToCart = () => {
