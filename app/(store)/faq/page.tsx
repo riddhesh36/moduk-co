@@ -9,7 +9,7 @@ const FAQS = [
     category: "Ordering & Delivery",
     questions: [
       { q: "Where do you deliver?", a: "We deliver across Mumbai and Navi Mumbai. If your pincode is outside our serviceable area, our checkout page will notify you." },
-      { q: "Can I get same-day delivery?", a: "Yes! We offer same-day delivery based on slot availability. Please check the 'Today' slots on our product pages. Our slots close a few hours prior to the delivery window." },
+      { q: "How far in advance should I order?", a: "We recommend booking your slot as early as possible. Because we handcraft our modaks fresh daily in limited batches, slots often fill up quickly and we close taking orders for the day once capacity is reached." },
       { q: "Do you offer Cash on Delivery (COD)?", a: "Yes, we accept both UPI (GPay, Paytm, PhonePe) and Cash on Delivery." },
     ]
   },

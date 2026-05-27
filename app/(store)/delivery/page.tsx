@@ -30,7 +30,7 @@ export default async function DeliveryPage() {
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-playfair font-bold text-dark mb-4">Delivery Information</h1>
           <p className="text-lg text-text-muted max-w-xl mx-auto">
-            Everything you need to know about our same-day delivery coverage and slots.
+            Everything you need to know about our delivery coverage and pre-order slots.
           </p>
         </div>
 
@@ -41,17 +41,36 @@ export default async function DeliveryPage() {
               <Truck size={24} />
             </div>
             <h2 className="text-2xl font-playfair font-bold text-dark mb-4">Delivery Zones</h2>
-            <p className="text-text-body mb-4">
-              We currently hand-deliver our premium modaks directly to your doorstep across the following regions:
+            <p className="text-text-body mb-4 leading-relaxed">
+              We hand-deliver our fresh modaks across selected zones in Mumbai:
             </p>
-            <ul className="list-disc list-inside text-text-muted space-y-2 mt-2">
-              <li>Mumbai City</li>
-              <li>Mumbai Suburban</li>
-              <li>Navi Mumbai</li>
-            </ul>
-            <p className="text-sm mt-6 text-rose font-semibold bg-rose/5 inline-block py-1.5 px-3 rounded-md">
-              Check pincode at checkout
-            </p>
+            
+            <div className="space-y-4 w-full">
+              <div className="p-3 bg-[#FBF0DC]/30 border border-[#B69141]/10 rounded-xl">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#B69141] block mb-1">Zone 1 — ₹50 Delivery Fee</span>
+                <p className="text-xs text-text-muted leading-relaxed">
+                  Parel, Lalbaug, Dadar, Matunga, Sion, Mahim, Byculla, Mazgaon
+                </p>
+              </div>
+
+              <div className="p-3 bg-[#FBF0DC]/30 border border-[#B69141]/10 rounded-xl">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#B69141] block mb-1">Zone 2 — ₹80 Delivery Fee</span>
+                <p className="text-xs text-text-muted leading-relaxed">
+                  Worli, Prabhadevi, Wadala, Santacruz, Chembur, Vile Parle, Andheri
+                </p>
+              </div>
+
+              <div className="p-3 border border-dashed border-dark/10 rounded-xl">
+                <span className="text-xs font-bold uppercase tracking-wider text-text-muted block mb-1">Outside these zones?</span>
+                <p className="text-xs text-text-body leading-relaxed">
+                  Self-pickup is available from our Lalbaug kitchen, or you can arrange your own Borzo delivery. 
+                  {" "}
+                  <a href="https://wa.me/918591781695" target="_blank" rel="noopener noreferrer" className="font-semibold text-[#B69141] hover:text-[#C4617A] underline">
+                    WhatsApp us to coordinate
+                  </a>.
+                </p>
+              </div>
+            </div>
           </div>
           
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-dark/5 flex flex-col items-start text-left">

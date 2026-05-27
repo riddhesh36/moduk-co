@@ -52,6 +52,8 @@ export interface Order {
   original_total?: number;
   final_total?: number;
   delivery_option?: 'delivery' | 'pickup';
+  delivery_fee?: number;
+  delivery_zone?: number | null;
   delivery_slots?: { label: string };
 }
 

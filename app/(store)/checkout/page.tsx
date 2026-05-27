@@ -9,6 +9,8 @@ import { useState, useEffect, useCallback } from "react";
 import { CheckCircle2, Loader2, X, Gift, Tag, Sparkles } from "lucide-react";
 import { AlertDialog } from "@/components/ui/AlertDialog";
 import confetti from "canvas-confetti";
+import { checkDeliveryZone, type ZoneResult, KITCHEN_ADDRESS, BORZO_LINK } from "@/lib/deliveryZones";
+import { ZoneStatusBadge } from "@/components/ZoneStatusBadge";
 
 export default function CheckoutPage() {
   const { items, totalPrice, clearCart } = useCart();
@@ -49,10 +51,6 @@ export default function CheckoutPage() {
     message: string;
   } | null>(null);
 
-  // Delivery Option State
-  const [deliveryOption, setDeliveryOption] = useState<"delivery" | "pickup">("delivery");
-  const deliveryFee = deliveryOption === "delivery" ? 50 : 0;
-
   // Form State
   const [formData, setFormData] = useState({
     name: "",
@@ -66,6 +64,26 @@ export default function CheckoutPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
+
+  // Delivery Option State
+  const [deliveryOption, setDeliveryOption] = useState<"delivery" | "pickup">("delivery");
+  const [zoneResult, setZoneResult] = useState<ZoneResult>({ status: "unknown" });
+
+  useEffect(() => {
+    const clean = formData.pincode.trim();
+    if (clean.length === 6) {
+      setZoneResult(checkDeliveryZone(clean));
+    } else {
+      setZoneResult({ status: "unknown" });
+    }
+  }, [formData.pincode]);
+
+  const deliveryFee =
+    deliveryOption === "pickup"
+      ? 0
+      : zoneResult.status === "serviceable"
+      ? zoneResult.fee
+      : 0;
 
   // Confetti burst on successful coupon apply
   const fireCouponConfetti = useCallback(() => {
@@ -213,7 +231,9 @@ export default function CheckoutPage() {
           pincode: deliveryOption === "pickup" ? "400025" : formData.pincode,
           notes: formData.notes,
           wa_opt_in: formData.waOptIn,
-          delivery_option: deliveryOption
+          delivery_option: deliveryOption,
+          delivery_fee: deliveryFee,
+          delivery_zone: deliveryOption === "pickup" ? null : (zoneResult.status === "serviceable" ? zoneResult.zone : null),
         }),
       });
 
@@ -311,14 +331,57 @@ export default function CheckoutPage() {
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-dark/5">
                   <h2 className="text-xl font-bold text-dark mb-4">Delivery Address</h2>
                   <div className="flex flex-col gap-4">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-sm font-semibold text-text-body">Full Address</label>
-                      <textarea required name="address" value={formData.address} onChange={handleInputChange} rows={3} className="border border-dark/20 rounded-md px-3 py-2 outline-none focus:border-rose transition-colors resize-none" placeholder="Flat No, Building, Street, Area" />
-                    </div>
                     <div className="flex flex-col gap-1.5 w-full md:w-1/2">
                       <label className="text-sm font-semibold text-text-body">Pincode</label>
-                      <input required name="pincode" value={formData.pincode} onChange={handleInputChange} type="text" className="border border-dark/20 rounded-md px-3 py-2 outline-none focus:border-rose transition-colors" placeholder="e.g. 400050" />
+                      <input 
+                        required 
+                        name="pincode" 
+                        value={formData.pincode} 
+                        onChange={handleInputChange} 
+                        type="text" 
+                        maxLength={6}
+                        className="border border-dark/20 rounded-md px-3 py-2 outline-none focus:border-rose transition-colors" 
+                        placeholder="e.g. 400012" 
+                      />
+                      <ZoneStatusBadge result={zoneResult} />
                     </div>
+
+                    {zoneResult.status === "serviceable" && (
+                      <div className="flex flex-col gap-1.5 animate-in fade-in duration-300">
+                        <label className="text-sm font-semibold text-text-body">Full Address</label>
+                        <textarea 
+                          required 
+                          name="address" 
+                          value={formData.address} 
+                          onChange={handleInputChange} 
+                          rows={3} 
+                          className="border border-dark/20 rounded-md px-3 py-2 outline-none focus:border-rose transition-colors resize-none" 
+                          placeholder="Flat No, Building, Street, Area" 
+                        />
+                      </div>
+                    )}
+
+                    {zoneResult.status === "out_of_zone" && (
+                      <div className="bg-[#FBF0DC]/40 border border-[#B69141]/20 rounded-xl p-5 text-left space-y-3 animate-in fade-in duration-300">
+                        <p className="font-semibold text-[#B69141] text-sm">We don&apos;t deliver to this pincode yet.</p>
+                        <div className="text-xs text-text-body space-y-2 leading-relaxed">
+                          <p className="font-semibold">You have two options:</p>
+                          <ul className="list-disc pl-4 space-y-1">
+                            <li>Self-pickup from our kitchen in Lalbaug, Mumbai (free)</li>
+                            <li>Arrange your own <a href={BORZO_LINK} target="_blank" rel="noopener noreferrer" className="underline hover:text-[#C4617A] font-medium">Borzo</a> delivery to our kitchen address and we&apos;ll hand it off:</li>
+                          </ul>
+                          <p className="bg-white/80 p-2 rounded border border-[#B69141]/10 text-[11px] font-mono italic">
+                            {KITCHEN_ADDRESS}
+                          </p>
+                          <p className="pt-1">
+                            WhatsApp us to coordinate:{" "}
+                            <a href="https://wa.me/918591781695" target="_blank" rel="noopener noreferrer" className="font-bold text-[#B69141] hover:text-[#C4617A] underline">
+                              +91 85917 81695
+                            </a>
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : (
@@ -400,7 +463,13 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex justify-between text-text-body">
                   <span>Delivery Fee</span>
-                  <span>₹{deliveryFee}</span>
+                  <span>
+                    {deliveryOption === "pickup"
+                      ? "₹0"
+                      : zoneResult.status === "serviceable"
+                      ? `₹${zoneResult.fee}`
+                      : "—"}
+                  </span>
                 </div>
 
                 {/* Coupon Discount Line (if applied) */}
@@ -492,7 +561,7 @@ export default function CheckoutPage() {
                 form="checkout-form"
                 size="lg"
                 className="w-full text-[16px] shadow-lg shadow-rose/20 h-12 flex items-center justify-center gap-2"
-                disabled={loading}
+                disabled={loading || (deliveryOption === "delivery" && zoneResult.status !== "serviceable")}
               >
                 {loading ? (
                   <>

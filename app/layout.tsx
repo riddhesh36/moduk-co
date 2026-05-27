@@ -17,7 +17,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Moduk & Co — Premium Homemade Modak Delivery in Mumbai | Same-Day Slots",
+  title: "Moduk & Co — Premium Homemade Modak Delivery in Mumbai",
   description: "Pure Joy. Made at Home. Delivered to Yours. Premium homemade modak delivery in Mumbai & Navi Mumbai.",
   icons: {
     icon: [

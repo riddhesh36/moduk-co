@@ -8,6 +8,27 @@ import {
   Leaf, Star, Heart, Clock, Sparkles, MapPin, ChevronRight,
 } from "lucide-react";
 
+function InstagramIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+      <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+    </svg>
+  );
+}
+
 /* ─── Stagger animation config ─────────────────────────── */
 
 const containerVariants = {
@@ -40,7 +61,7 @@ const steps = [
     num: "02",
     icon: Clock,
     title: "Pick a Slot",
-    desc: "Select a delivery window — today or tomorrow.",
+    desc: "Select an available slot before they fill up.",
   },
   {
     num: "03",
@@ -134,25 +155,26 @@ export default function HeroSection() {
             </div>
           </motion.div>
 
-          {/* ── CARD 3: Delivery info (right top) ──── */}
+          {/* ── CARD 3: Instagram Info (right top) ──── */}
           <motion.div
             variants={cardVariants}
-            className="bento-card col-span-2 md:col-span-2 lg:col-span-3 row-span-1 rounded-3xl overflow-hidden relative bg-dark"
+            className="bento-card col-span-2 md:col-span-2 lg:col-span-3 row-span-1 rounded-3xl overflow-hidden relative bg-dark group cursor-pointer"
           >
-            <div className="p-5 md:p-6 flex items-center justify-between h-full">
-              <div>
-                <p className="text-cream/40 text-[10px] tracking-[0.2em] uppercase font-semibold font-dmsans">
-                  Mumbai &amp; Navi Mumbai
-                </p>
-                <p className="text-cream text-base md:text-lg font-playfair font-bold mt-1">
-                  Same-day delivery
-                </p>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="block h-full w-full">
+              <div className="p-5 md:p-6 flex items-center justify-between h-full">
+                <div>
+                  <p className="text-cream/40 text-[10px] tracking-[0.2em] uppercase font-semibold font-dmsans">
+                    Follow us for updates
+                  </p>
+                  <p className="text-cream text-base md:text-lg font-playfair font-bold mt-1 group-hover:text-rose transition-colors">
+                    @ModukAndCo
+                  </p>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-pink-600/20 group-hover:text-pink-400 transition-all duration-300">
+                  <InstagramIcon className="w-5 h-5 text-cream/60 group-hover:text-pink-400 transition-colors" />
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-emerald-400 pulse-dot" />
-                <span className="text-emerald-400 text-xs font-semibold font-dmsans">Live</span>
-              </div>
-            </div>
+            </a>
           </motion.div>
 
           {/* ── CARD 4: How It Works — 3 Steps ─────── */}
@@ -244,7 +266,7 @@ export default function HeroSection() {
                 {[
                   { icon: Leaf, label: "100% Pure", desc: "No preservatives ever" },
                   { icon: Heart, label: "Homemade", desc: "Made with love at home" },
-                  { icon: Clock, label: "Same-day", desc: "Delivered in hours" },
+                  { icon: Clock, label: "Pre-order", desc: "Slots fill up fast" },
                   { icon: Star, label: "Premium", desc: "Finest ingredients only" },
                 ].map((f, i) => (
                   <motion.div

@@ -98,7 +98,7 @@ export default function ProductDetailClient({ product, slots }: ProductDetailCli
               <div className="px-4 pb-4 text-sm text-text-muted space-y-2 border-t border-dark/5 pt-4">
                 <p>✓ 100% Handcrafted</p>
                 <p>✓ Pure, authentic ingredients</p>
-                <p>✓ Same-day delivery across Mumbai</p>
+                <p>✓ Hand-delivered across Mumbai</p>
               </div>
             )}
           </div>

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { razorpay } from '@/lib/razorpay';
 import { MOCK_PRODUCTS } from '@/lib/constants';
+import { checkDeliveryZone } from '@/lib/deliveryZones';
 
 export async function POST(req: Request) {
   try {
@@ -16,8 +17,6 @@ export async function POST(req: Request) {
       items,
       coupon_id,
       discount_amount,
-      original_total,
-      final_total,
       pincode,
       notes,
       wa_opt_in,
@@ -84,6 +83,27 @@ export async function POST(req: Request) {
       };
     });
 
+    // Validate zone server-side if it's delivery
+    let calculatedDeliveryFee = 0;
+    let calculatedDeliveryZone = null;
+
+    if (delivery_option === "delivery") {
+      const zoneResult = checkDeliveryZone(pincode || "");
+      if (zoneResult.status === "out_of_zone") {
+        return NextResponse.json({ error: "Delivery not available for this pincode" }, { status: 400 });
+      }
+      if (zoneResult.status === "serviceable") {
+        calculatedDeliveryFee = zoneResult.fee;
+        calculatedDeliveryZone = zoneResult.zone;
+      } else {
+        return NextResponse.json({ error: "Invalid or missing pincode for delivery" }, { status: 400 });
+      }
+    }
+
+    const subtotal = enrichedItems.reduce((acc: number, item: { product: { price: number }; quantity: number }) => acc + (item.product.price * item.quantity), 0);
+    const calculatedOriginalTotal = subtotal + calculatedDeliveryFee;
+    const calculatedFinalTotal = Math.max(0, calculatedOriginalTotal - (discount_amount || 0));
+
     // 3. Create order row in Supabase with status = 'payment_pending'
     const displayId = "ORD-" + Math.floor(100000 + Math.random() * 900000);
     const orderData = {
@@ -105,12 +125,14 @@ export async function POST(req: Request) {
       wa_opt_in: wa_opt_in || false,
       order_notes: notes || "",
       status: 'payment_pending',
-      total_amount: final_total,
+      total_amount: calculatedFinalTotal,
       coupon_id: coupon_id || null,
       discount_amount: discount_amount || 0,
-      original_total: original_total || final_total,
-      final_total: final_total,
+      original_total: calculatedOriginalTotal,
+      final_total: calculatedFinalTotal,
       delivery_option: delivery_option || 'delivery',
+      delivery_fee: calculatedDeliveryFee,
+      delivery_zone: calculatedDeliveryZone,
     };
 
     const { data: newOrder, error: insertErr } = await supabase
@@ -130,7 +152,7 @@ export async function POST(req: Request) {
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
       
       paymentLink = await razorpay.paymentLink.create({
-        amount: Math.round(final_total * 100), // in paise
+        amount: Math.round(calculatedFinalTotal * 100), // in paise
         currency: "INR",
         accept_partial: false,
         description: `Moduk & Co — Order #${displayId}`,

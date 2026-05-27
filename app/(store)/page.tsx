@@ -39,7 +39,7 @@ export default async function Home() {
     <div className="w-full">
       {/* DELIVERY NUDGE */}
       <div className="w-full bg-rose text-white text-center py-2 px-4 text-xs tracking-wide uppercase font-semibold">
-        Same-day delivery across Mumbai &amp; Navi Mumbai · Today&apos;s slots available
+        Freshly handcrafted modaks · Follow us on Instagram @ModukAndCo for slot updates
       </div>
 
       {/* BENTO HERO — includes How It Works + Brand Story */}
