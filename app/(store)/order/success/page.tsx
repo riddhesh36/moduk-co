@@ -5,10 +5,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState, Suspense } from "react";
 import { getOrder } from "../[id]/actions";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 function SuccessPageContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const orderId = searchParams.get("order_id");
   
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -22,6 +23,10 @@ function SuccessPageContent() {
     if (!orderId) return;
     if (isManual) setRefreshing(true);
     const res = await getOrder(orderId);
+    if (res.requiresAuth) {
+      router.replace(`/track?order_id=${orderId}`);
+      return;
+    }
     if (res.success) {
       setOrder(res.order);
     }

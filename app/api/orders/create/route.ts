@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { razorpay } from '@/lib/razorpay';
 import { MOCK_PRODUCTS } from '@/lib/constants';
@@ -199,6 +200,15 @@ export async function POST(req: Request) {
     if (updateErr) {
       console.error("Failed to update payment_link_id in order:", updateErr);
       // Continue even if update fails, as the customer has the payment link URL
+    }
+
+    // Set customer_email cookie in headers so success page can access it
+    if (customer_email) {
+      cookies().set("customer_email", customer_email, {
+        maxAge: 30 * 24 * 60 * 60, // 30 days
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production"
+      });
     }
 
     // 6. Return payment_url and displayId (order_id)

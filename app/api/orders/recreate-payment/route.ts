@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { razorpay } from '@/lib/razorpay';
 
@@ -20,6 +21,18 @@ export async function POST(req: Request) {
     if (error || !order) {
       console.error("Fetch order for recreate payment link error:", error);
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    }
+
+    // Verify ownership
+    const cookieStore = cookies();
+    const userEmail = cookieStore.get("customer_email")?.value;
+    const userMobile = cookieStore.get("customer_mobile")?.value;
+
+    if (order.customer_email && order.customer_email.toLowerCase() !== userEmail?.toLowerCase()) {
+      return NextResponse.json({ error: "Unauthorized access to order" }, { status: 401 });
+    }
+    if (!order.customer_email && order.customer_mobile && order.customer_mobile !== userMobile) {
+      return NextResponse.json({ error: "Unauthorized access to order" }, { status: 401 });
     }
 
     // 2. Call Razorpay Payment Links API

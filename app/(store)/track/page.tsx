@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { ShoppingBag, CheckCircle2, ChevronRight, LogOut, ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { sendEmailOTP, verifyEmailOTP, getCustomerOrders, logoutCustomer } from "./actions";
 import Link from "next/link";
 import { type Order } from "@/types";
+import { useSearchParams, useRouter } from "next/navigation";
 
-export default function TrackOrdersPage() {
+function TrackOrdersContent() {
   const [step, setStep] = useState<"email" | "otp" | "list">("email");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -15,6 +16,10 @@ export default function TrackOrdersPage() {
   const [error, setError] = useState("");
   const [orders, setOrders] = useState<Order[]>([]);
   const [timer, setTimer] = useState(0);
+
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const orderId = searchParams.get("order_id");
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -31,17 +36,29 @@ export default function TrackOrdersPage() {
     const fetchOrders = async () => {
       setLoading(true);
       const res = await getCustomerOrders();
-      if (res.success) {
-        setOrders(res.orders || []);
-        if (res.orders && res.orders.length > 0) {
-          setEmail(res.orders[0].customer_email || res.orders[0].customer_mobile || "");
+      if (res.success && res.orders) {
+        if (orderId) {
+          const hasOrder = res.orders.some(o => o.display_id === orderId);
+          if (hasOrder) {
+            router.replace(`/order/success?order_id=${orderId}`);
+            return;
+          } else {
+            // Force logout wrong email for this specific order
+            await logoutCustomer();
+            setStep("email");
+          }
+        } else {
+          setOrders(res.orders || []);
+          if (res.orders.length > 0) {
+            setEmail(res.orders[0].customer_email || res.orders[0].customer_mobile || "");
+          }
+          setStep("list");
         }
-        setStep("list");
       }
       setLoading(false);
     };
     fetchOrders();
-  }, []);
+  }, [orderId, router]);
 
   const handleSendOTP = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -73,10 +90,14 @@ export default function TrackOrdersPage() {
     setError("");
     const res = await verifyEmailOTP(email, otp);
     if (res.success) {
-      const ordersRes = await getCustomerOrders();
-      if (ordersRes.success) {
-        setOrders(ordersRes.orders || []);
-        setStep("list");
+      if (orderId) {
+        router.replace(`/order/success?order_id=${orderId}`);
+      } else {
+        const ordersRes = await getCustomerOrders();
+        if (ordersRes.success) {
+          setOrders(ordersRes.orders || []);
+          setStep("list");
+        }
       }
     } else {
       setError(res.error || "Verification failed.");
@@ -110,8 +131,14 @@ export default function TrackOrdersPage() {
             <div className="w-16 h-16 bg-rose/10 text-rose rounded-full flex items-center justify-center mx-auto mb-6">
               <ShoppingBag size={32} />
             </div>
-            <h1 className="text-3xl font-playfair font-bold text-dark mb-2">Track Your Orders</h1>
-            <p className="text-text-muted mb-8">Enter your email address used during checkout to view your orders.</p>
+            <h1 className="text-3xl font-playfair font-bold text-dark mb-2">
+              {orderId ? "Verify Email to View Order" : "Track Your Orders"}
+            </h1>
+            <p className="text-text-muted mb-8">
+              {orderId 
+                ? `Please enter the email address used for order ${orderId} to verify your identity and view its status.`
+                : "Enter your email address used during checkout to view your orders."}
+            </p>
 
             <form onSubmit={handleSendOTP} className="space-y-4">
               <div className="text-left">
@@ -259,5 +286,18 @@ export default function TrackOrdersPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function TrackOrdersPage() {
+  return (
+    <Suspense fallback={
+      <div className="w-full bg-cream min-h-[80vh] flex flex-col items-center justify-center p-6">
+        <Loader2 className="animate-spin text-rose mb-4" size={32} />
+        <p className="text-text-muted font-medium">Loading tracker...</p>
+      </div>
+    }>
+      <TrackOrdersContent />
+    </Suspense>
   );
 }
