@@ -249,7 +249,12 @@ export default function CheckoutPage() {
           customer_email: formData.email,
           delivery_address: deliveryOption === "pickup" ? "Self-Pickup from Kitchen (Lalbaug)" : formData.address,
           delivery_slot: selectedSlotId,
-          items: items.map(item => ({ product_id: item.product.id, quantity: item.quantity })),
+          slot_date: firstItem ? firstItem.selectedDate : 'today',
+          items: items.map(item => ({ 
+            product_id: item.product.id, 
+            quantity: item.quantity,
+            selectedDate: item.selectedDate
+          })),
           coupon_id: appliedCoupon?.coupon_id || null,
           discount_amount: discountAmount,
           original_total: originalTotal,
