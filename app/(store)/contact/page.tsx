@@ -55,9 +55,9 @@ export default function ContactPage() {
             <p className="text-text-muted mb-8 max-w-sm">
               See how our modaks are made and get behind-the-scenes glimpses of our kitchen.
             </p>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-full">
+            <a href="https://instagram.com/modukandco" target="_blank" rel="noopener noreferrer" className="w-full">
               <Button variant="secondary" size="lg" className="w-full text-pink-600 border-pink-200 hover:bg-pink-50">
-                @ModukAndCo
+                @modukandco
               </Button>
             </a>
           </div>

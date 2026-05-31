@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
-  Leaf, Star, Heart, Clock, Sparkles, MapPin, ChevronRight,
+  Leaf, Star, Heart, Clock, Sparkles, MapPin, ChevronRight, CreditCard,
 } from "lucide-react";
 
 function InstagramIcon({ className }: { className?: string }) {
@@ -65,6 +65,12 @@ const steps = [
   },
   {
     num: "03",
+    icon: CreditCard,
+    title: "Add details & Pay",
+    desc: "Enter details and complete secure payment.",
+  },
+  {
+    num: "04",
     icon: MapPin,
     title: "Delivered Fresh",
     desc: "Hand-delivered to your doorstep across Mumbai.",
@@ -160,14 +166,14 @@ export default function HeroSection() {
             variants={cardVariants}
             className="bento-card col-span-2 md:col-span-2 lg:col-span-3 row-span-1 rounded-3xl overflow-hidden relative bg-dark group cursor-pointer"
           >
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="block h-full w-full">
+            <a href="https://instagram.com/modukandco" target="_blank" rel="noopener noreferrer" className="block h-full w-full">
               <div className="p-5 md:p-6 flex items-center justify-between h-full">
                 <div>
                   <p className="text-cream/40 text-[10px] tracking-[0.2em] uppercase font-semibold font-dmsans">
                     Follow us for updates
                   </p>
                   <p className="text-cream text-base md:text-lg font-playfair font-bold mt-1 group-hover:text-rose transition-colors">
-                    @ModukAndCo
+                    @modukandco
                   </p>
                 </div>
                 <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-pink-600/20 group-hover:text-pink-400 transition-all duration-300">
@@ -186,7 +192,7 @@ export default function HeroSection() {
               <span className="text-[10px] tracking-[0.2em] uppercase font-semibold text-rose/60 font-dmsans">
                 How it works
               </span>
-              <div className="mt-4 flex-1 flex flex-col justify-between gap-3">
+              <div className="mt-4 flex-1 flex flex-col justify-between gap-2">
                 {steps.map((step, i) => (
                   <motion.div
                     key={step.num}

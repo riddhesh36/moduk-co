@@ -55,6 +55,7 @@ export default function CheckoutPage() {
   const [formData, setFormData] = useState({
     name: "",
     mobile: "",
+    email: "",
     address: "",
     pincode: "",
     notes: "",
@@ -79,7 +80,7 @@ export default function CheckoutPage() {
   }, [formData.pincode]);
 
   const deliveryFee =
-    deliveryOption === "pickup"
+    deliveryOption === "pickup" || totalPrice > 399
       ? 0
       : zoneResult.status === "serviceable"
       ? zoneResult.fee
@@ -221,6 +222,7 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           customer_name: formData.name,
           customer_phone: formData.mobile,
+          customer_email: formData.email,
           delivery_address: deliveryOption === "pickup" ? "Self-Pickup from Kitchen (Lalbaug)" : formData.address,
           delivery_slot: selectedSlotId,
           items: items.map(item => ({ product_id: item.product.id, quantity: item.quantity })),
@@ -289,6 +291,10 @@ export default function CheckoutPage() {
                     <label className="text-sm font-semibold text-text-body">Mobile Number</label>
                     <input required name="mobile" value={formData.mobile} onChange={handleInputChange} type="tel" className="border border-dark/20 rounded-md px-3 py-2 outline-none focus:border-rose transition-colors" placeholder="e.g. 9876543210" />
                   </div>
+                  <div className="flex flex-col gap-1.5 md:col-span-2">
+                    <label className="text-sm font-semibold text-text-body">Email Address</label>
+                    <input required name="email" value={formData.email} onChange={handleInputChange} type="email" className="border border-dark/20 rounded-md px-3 py-2 outline-none focus:border-rose transition-colors" placeholder="e.g. priya@example.com" />
+                  </div>
                 </div>
               </div>
 
@@ -305,7 +311,9 @@ export default function CheckoutPage() {
                   >
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-semibold text-sm text-dark">Home Delivery</span>
-                      <span className="text-xs font-bold text-rose bg-rose/10 px-2 py-0.5 rounded-full">₹50</span>
+                      <span className="text-xs font-bold text-rose bg-rose/10 px-2 py-0.5 rounded-full">
+                        {totalPrice > 399 ? "Free" : "₹100"}
+                      </span>
                     </div>
                     <p className="text-xs text-text-muted">Porter or Dunzo delivery straight to your doorstep.</p>
                   </div>
@@ -404,17 +412,6 @@ export default function CheckoutPage() {
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-dark/5">
                 <h2 className="text-xl font-bold text-dark mb-4">Order Notes (Optional)</h2>
                 <textarea name="notes" value={formData.notes} onChange={handleInputChange} rows={2} className="w-full border border-dark/20 rounded-md px-3 py-2 outline-none focus:border-rose transition-colors resize-none" placeholder="Personalise your box — add a message or request" />
-
-                <div className="mt-4 flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="waOptIn"
-                    checked={formData.waOptIn}
-                    onChange={(e) => setFormData(p => ({ ...p, waOptIn: e.target.checked }))}
-                    className="w-4 h-4 text-rose rounded border-dark/20 focus:ring-rose"
-                  />
-                  <label htmlFor="waOptIn" className="text-sm text-text-muted">Send my order updates on WhatsApp</label>
-                </div>
               </div>
 
               {/* Payment Method */}
@@ -466,6 +463,8 @@ export default function CheckoutPage() {
                   <span>
                     {deliveryOption === "pickup"
                       ? "₹0"
+                      : totalPrice > 399
+                      ? "Free"
                       : zoneResult.status === "serviceable"
                       ? `₹${zoneResult.fee}`
                       : "—"}

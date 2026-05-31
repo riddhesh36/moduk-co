@@ -65,7 +65,7 @@ export default async function AdminOrdersPage() {
 
             <div className="text-sm border-t border-[#FDF0F3] pt-2">
               <div className="font-semibold text-dark">{order.customer_name}</div>
-              <div className="text-xs text-text-muted">{order.customer_mobile}</div>
+              <div className="text-xs text-text-muted">{order.customer_mobile}{order.customer_email ? ` • ${order.customer_email}` : ''}</div>
             </div>
 
             <div className="text-xs text-text-muted bg-cream/30 p-2.5 rounded-lg space-y-1">
@@ -127,7 +127,7 @@ export default async function AdminOrdersPage() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="font-semibold text-dark">{order.customer_name}</div>
-                    <div className="text-xs text-text-muted">{order.customer_mobile}</div>
+                    <div className="text-xs text-text-muted">{order.customer_mobile}{order.customer_email ? ` • ${order.customer_email}` : ''}</div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm font-medium">

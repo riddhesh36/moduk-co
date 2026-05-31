@@ -3,13 +3,13 @@
 import { useState, useEffect } from "react";
 import { ShoppingBag, CheckCircle2, ChevronRight, LogOut, ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { sendOTP, verifyOTP, getCustomerOrders, logoutCustomer } from "./actions";
+import { sendEmailOTP, verifyEmailOTP, getCustomerOrders, logoutCustomer } from "./actions";
 import Link from "next/link";
 import { type Order } from "@/types";
 
 export default function TrackOrdersPage() {
-  const [step, setStep] = useState<"mobile" | "otp" | "list">("mobile");
-  const [mobile, setMobile] = useState("");
+  const [step, setStep] = useState<"email" | "otp" | "list">("email");
+  const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -33,6 +33,9 @@ export default function TrackOrdersPage() {
       const res = await getCustomerOrders();
       if (res.success) {
         setOrders(res.orders || []);
+        if (res.orders && res.orders.length > 0) {
+          setEmail(res.orders[0].customer_email || res.orders[0].customer_mobile || "");
+        }
         setStep("list");
       }
       setLoading(false);
@@ -42,15 +45,15 @@ export default function TrackOrdersPage() {
 
   const handleSendOTP = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!mobile || mobile.length < 10) {
-      setError("Please enter a valid mobile number.");
+    if (!email || !/\S+@\S+\.\S+/.test(email)) {
+      setError("Please enter a valid email address.");
       return;
     }
     if (loading || timer > 0) return; // Prevent multi-clicks
 
     setLoading(true);
     setError("");
-    const res = await sendOTP(mobile);
+    const res = await sendEmailOTP(email);
     if (res.success) {
       setStep("otp");
       setTimer(30); // 30 seconds wait
@@ -68,7 +71,7 @@ export default function TrackOrdersPage() {
     }
     setLoading(true);
     setError("");
-    const res = await verifyOTP(mobile, otp);
+    const res = await verifyEmailOTP(email, otp);
     if (res.success) {
       const ordersRes = await getCustomerOrders();
       if (ordersRes.success) {
@@ -83,13 +86,13 @@ export default function TrackOrdersPage() {
 
   const handleLogout = async () => {
     await logoutCustomer();
-    setStep("mobile");
+    setStep("email");
     setOrders([]);
-    setMobile("");
+    setEmail("");
     setOtp("");
   };
 
-  if (loading && step === "mobile") {
+  if (loading && step === "email") {
     return (
       <div className="w-full bg-cream min-h-[80vh] flex flex-col items-center justify-center p-6">
         <Loader2 className="animate-spin text-rose mb-4" size={32} />
@@ -102,44 +105,44 @@ export default function TrackOrdersPage() {
     <div className="w-full bg-cream min-h-screen py-16 px-6">
       <div className="max-w-4xl mx-auto">
 
-        {step === "mobile" && (
+        {step === "email" && (
           <div className="max-w-md mx-auto bg-white p-8 md:p-10 rounded-3xl shadow-xl border border-rose/10 text-center">
             <div className="w-16 h-16 bg-rose/10 text-rose rounded-full flex items-center justify-center mx-auto mb-6">
               <ShoppingBag size={32} />
             </div>
             <h1 className="text-3xl font-playfair font-bold text-dark mb-2">Track Your Orders</h1>
-            <p className="text-text-muted mb-8">Enter your mobile number used during checkout to view your orders.</p>
+            <p className="text-text-muted mb-8">Enter your email address used during checkout to view your orders.</p>
 
             <form onSubmit={handleSendOTP} className="space-y-4">
               <div className="text-left">
-                <label className="text-xs font-bold text-text-muted uppercase tracking-wider mb-1.5 block">Mobile Number</label>
+                <label className="text-xs font-bold text-text-muted uppercase tracking-wider mb-1.5 block">Email Address</label>
                 <input
-                  type="tel"
-                  value={mobile}
-                  onChange={(e) => setMobile(e.target.value)}
-                  placeholder="e.g. 9876543210"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="e.g. priya@example.com"
                   className="w-full h-14 bg-cream/30 border border-dark/10 rounded-xl px-4 outline-none focus:border-rose transition-all text-lg font-semibold tracking-wide"
                   required
                 />
               </div>
               {error && <p className="text-rose text-sm font-medium">{error}</p>}
               <Button size="lg" className="w-full h-14 shadow-lg shadow-rose/20 text-base" disabled={loading}>
-                {loading ? "Sending..." : "Send OTP via SMS"}
+                {loading ? "Sending..." : "Send OTP via Email"}
               </Button>
             </form>
           </div>
         )}
 
         {step === "otp" && (
-          <div className="max-w-md mx-auto bg-white p-8 md:p-10 rounded-3xl shadow-xl border border-rose/10 text-center">
-            <button onClick={() => setStep("mobile")} className="absolute top-8 left-8 text-text-muted hover:text-dark">
+          <div className="max-w-md mx-auto bg-white p-8 md:p-10 rounded-3xl shadow-xl border border-rose/10 text-center relative">
+            <button onClick={() => setStep("email")} className="absolute top-8 left-8 text-text-muted hover:text-dark">
               <ArrowLeft size={20} />
             </button>
             <div className="w-16 h-16 bg-rose/10 text-rose rounded-full flex items-center justify-center mx-auto mb-6">
               <CheckCircle2 size={32} />
             </div>
             <h1 className="text-3xl font-playfair font-bold text-dark mb-2">Verify OTP</h1>
-            <p className="text-text-muted mb-8">We&apos;ve sent a 6-digit code to <span className="font-bold text-dark">{mobile}</span></p>
+            <p className="text-text-muted mb-8">We&apos;ve sent a 6-digit code to <span className="font-bold text-dark">{email}</span></p>
 
             <form onSubmit={handleVerifyOTP} className="space-y-4">
               <div className="text-left">
@@ -175,7 +178,7 @@ export default function TrackOrdersPage() {
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
               <div>
                 <h1 className="text-4xl font-playfair font-bold text-dark mb-2">My Orders</h1>
-                <p className="text-text-muted">Welcome back! Showing orders for <span className="font-bold text-dark">{mobile}</span></p>
+                <p className="text-text-muted">Welcome back! Showing orders for <span className="font-bold text-dark">{email}</span></p>
               </div>
               <button
                 onClick={handleLogout}
@@ -244,7 +247,7 @@ export default function TrackOrdersPage() {
                 <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-dark/20">
                   <ShoppingBag size={48} className="text-rose/20 mx-auto mb-4" />
                   <h3 className="text-xl font-bold text-dark">No orders found</h3>
-                  <p className="text-text-muted mt-2 mb-8">You haven&apos;t placed any orders with this number yet.</p>
+                  <p className="text-text-muted mt-2 mb-8">You haven&apos;t placed any orders with this email address yet.</p>
                   <Link href="/shop">
                     <Button>Start Shopping</Button>
                   </Link>

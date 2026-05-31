@@ -44,18 +44,24 @@ export default async function AdminOrderInbox() {
     .reduce((sum, o) => sum + Number(o.total_amount), 0);
 
   // Modak Count Calculation
-  // Classic = 5, Delight = 7, Celebration = 11
-  let totalModaks = 0;
+  // Classic = 5, Delight = 7, Celebration = 11, Mix = 3 Classic + 3 Mango
+  let classicPieces = 0;
+  let mangoPieces = 0;
   todayOrders.filter(o => o.status !== 'cancelled').forEach(order => {
-    order.items.forEach((item: { product_id: string; name: string; qty: number; product?: { name: string }; quantity?: number }) => {
+    order.items.forEach((item: { product_id: string; name: string; qty: number; product?: { name: string; pieces?: number }; quantity?: number }) => {
       const itemName = item.product?.name || item.name || '';
       const itemQty = item.quantity || item.qty || 1;
-      if (item.product_id === 'classic-box' || itemName.toLowerCase().includes('classic')) {
-        totalModaks += (5 * itemQty);
-      } else if (item.product_id === 'delight-box' || itemName.toLowerCase().includes('delight')) {
-        totalModaks += (7 * itemQty);
-      } else if (item.product_id === 'celebration-box' || itemName.toLowerCase().includes('celebration')) {
-        totalModaks += (11 * itemQty);
+      const pieces = item.product?.pieces || (item.product_id === 'classic-box' ? 5 : item.product_id === 'delight-box' ? 7 : item.product_id === 'celebration-box' ? 11 : 6);
+      
+      const lowerName = itemName.toLowerCase();
+      if (lowerName.includes('mix') || item.product_id?.toLowerCase().includes('mix')) {
+        classicPieces += (3 * itemQty);
+        mangoPieces += (3 * itemQty);
+      } else if (lowerName.includes('mango') || item.product_id?.toLowerCase().includes('mango')) {
+        mangoPieces += (pieces * itemQty);
+      } else {
+        // Fallback for classic, delight, celebration, etc.
+        classicPieces += (pieces * itemQty);
       }
     });
   });
@@ -96,9 +102,13 @@ export default async function AdminOrderInbox() {
           <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center">
             <Package size={24} />
           </div>
-          <div>
-            <p className="text-sm text-[#777777] font-semibold">Modaks to Prepare (Today)</p>
-            <h3 className="text-2xl font-bold font-playfair">{totalModaks} Pieces</h3>
+          <div className="flex-1">
+            <p className="text-sm text-[#777777] font-semibold mb-1">Modaks to Prepare (Today)</p>
+            <div className="flex gap-4 text-xs font-semibold text-[#2C1A1D]">
+              <div>Classic: <span className="text-base font-bold font-playfair text-[#C4617A]">{classicPieces}</span></div>
+              <div className="border-l border-[#FDF0F3] pl-4">Mango: <span className="text-base font-bold font-playfair text-[#C4617A]">{mangoPieces}</span></div>
+            </div>
+            <div className="text-[10px] text-[#777777] mt-1 font-medium">Total: {classicPieces + mangoPieces} Pieces</div>
           </div>
         </div>
       </div>
@@ -131,7 +141,7 @@ export default async function AdminOrderInbox() {
 
             <div className="text-sm border-t border-[#FDF0F3] pt-2">
               <div className="font-bold text-[#2C1A1D]">{order.customer_name}</div>
-              <div className="text-xs text-[#777777]">{order.customer_mobile}</div>
+              <div className="text-xs text-[#777777]">{order.customer_mobile}{order.customer_email ? ` • ${order.customer_email}` : ''}</div>
             </div>
 
             <div className="text-xs text-[#777777] bg-[#FDF8F0]/50 p-2 rounded-lg">
@@ -197,7 +207,7 @@ export default async function AdminOrderInbox() {
                 </td>
                 <td className="px-6 py-4 font-medium">
                   {order.customer_name}
-                  <div className="text-xs text-[#777777] mt-0.5">{order.customer_mobile}</div>
+                  <div className="text-xs text-[#777777] mt-0.5">{order.customer_mobile}{order.customer_email ? ` • ${order.customer_email}` : ''}</div>
                 </td>
                 <td className="px-6 py-4 text-[#777777]">
                   {order.items.map((it: Record<string, unknown>) => formatItemText(it)).join(", ")}

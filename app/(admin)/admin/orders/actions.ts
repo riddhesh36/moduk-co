@@ -3,6 +3,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
+import { supabaseAdmin } from "@/lib/supabase";
 
 export async function updateOrderStatus(orderId: string, status: string) {
   const cookieStore = cookies();
@@ -32,19 +33,7 @@ export async function updateOrderStatus(orderId: string, status: string) {
 }
 
 export async function updatePaymentStatus(orderId: string, payment_status: string) {
-  const cookieStore = cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll(); },
-        setAll() {},
-      },
-    }
-  );
-
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from("orders")
     .update({ payment_status })
     .eq("id", orderId);
@@ -54,6 +43,9 @@ export async function updatePaymentStatus(orderId: string, payment_status: strin
     return { success: false, error: error.message };
   }
 
+  revalidatePath("/admin");
   revalidatePath("/admin/orders");
   return { success: true };
 }
+
+

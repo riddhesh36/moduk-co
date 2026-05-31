@@ -66,7 +66,7 @@ export function QuickAddDialog({
       selectedDate,
     });
     
-    setToastMessage(`${product.name} added to cart!`);
+    setToastMessage(`${quantity}x ${product.name} added to cart`);
     setShowToast(true);
     onClose();
   };

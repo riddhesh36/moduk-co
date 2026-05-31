@@ -12,6 +12,7 @@ export async function POST(req: Request) {
     const {
       customer_name,
       customer_phone,
+      customer_email,
       delivery_address,
       delivery_slot,
       items,
@@ -83,7 +84,8 @@ export async function POST(req: Request) {
       };
     });
 
-    // Validate zone server-side if it's delivery
+    const subtotal = enrichedItems.reduce((acc: number, item: { product: { price: number }; quantity: number }) => acc + (item.product.price * item.quantity), 0);
+    
     let calculatedDeliveryFee = 0;
     let calculatedDeliveryZone = null;
 
@@ -93,14 +95,13 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Delivery not available for this pincode" }, { status: 400 });
       }
       if (zoneResult.status === "serviceable") {
-        calculatedDeliveryFee = zoneResult.fee;
+        calculatedDeliveryFee = subtotal > 399 ? 0 : zoneResult.fee;
         calculatedDeliveryZone = zoneResult.zone;
       } else {
         return NextResponse.json({ error: "Invalid or missing pincode for delivery" }, { status: 400 });
       }
     }
 
-    const subtotal = enrichedItems.reduce((acc: number, item: { product: { price: number }; quantity: number }) => acc + (item.product.price * item.quantity), 0);
     const calculatedOriginalTotal = subtotal + calculatedDeliveryFee;
     const calculatedFinalTotal = Math.max(0, calculatedOriginalTotal - (discount_amount || 0));
 
@@ -110,6 +111,7 @@ export async function POST(req: Request) {
       display_id: displayId,
       customer_name,
       customer_mobile: customer_phone,
+      customer_email,
       address_line1: delivery_address,
       address_area: notes ? `Notes: ${notes}` : 'N/A',
       address_city: 'Mumbai',
@@ -149,7 +151,9 @@ export async function POST(req: Request) {
     // 4. Call Razorpay Payment Links API
     let paymentLink;
     try {
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+      const host = req.headers.get('host') || 'localhost:3000';
+      const protocol = host.includes('localhost') ? 'http' : 'https';
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `${protocol}://${host}`;
       
       paymentLink = await razorpay.paymentLink.create({
         amount: Math.round(calculatedFinalTotal * 100), // in paise
@@ -158,11 +162,12 @@ export async function POST(req: Request) {
         description: `Moduk & Co — Order #${displayId}`,
         customer: {
           name: customer_name,
-          contact: `+91${customer_phone.replace(/\D/g, '').slice(-10)}`
+          contact: `+91${customer_phone.replace(/\D/g, '').slice(-10)}`,
+          email: customer_email || undefined
         },
         notify: {
           sms: true,
-          email: false
+          email: customer_email ? true : false
         },
         reminder_enable: false,
         notes: {

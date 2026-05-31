@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { updateOrderStatus } from "@/app/(admin)/admin/actions";
+import { useRouter } from "next/navigation";
 
 interface OrderStatusSelectorProps {
   orderId: string;
@@ -10,6 +11,7 @@ interface OrderStatusSelectorProps {
 
 export default function OrderStatusSelector({ orderId, currentStatus }: OrderStatusSelectorProps) {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const statuses = [
     { value: 'payment_pending', label: 'PAYMENT PENDING', color: 'bg-amber-50 text-amber-700 border-amber-200' },
@@ -29,6 +31,7 @@ export default function OrderStatusSelector({ orderId, currentStatus }: OrderSta
     const newStatus = e.target.value;
     startTransition(async () => {
       await updateOrderStatus(orderId, newStatus);
+      router.refresh();
     });
   };
 

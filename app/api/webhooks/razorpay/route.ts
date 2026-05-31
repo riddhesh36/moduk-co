@@ -121,7 +121,9 @@ export async function POST(req: Request) {
       }
 
       // Trigger WhatsApp Notifications
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+      const host = req.headers.get('host') || 'localhost:3000';
+      const protocol = host.includes('localhost') ? 'http' : 'https';
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `${protocol}://${host}`;
 
       // Send to customer if opted-in
       if (order.wa_opt_in && order.customer_mobile) {

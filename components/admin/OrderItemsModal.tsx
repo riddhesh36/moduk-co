@@ -41,7 +41,7 @@ export default function OrderItemsModal({ order }: { order: Order }) {
                 <h4 className="text-xs font-bold uppercase tracking-wider text-[#777777] mb-2">Customer Info</h4>
                 <div className="bg-[#FDF8F0] p-3 rounded-xl border border-[#FDF0F3] text-sm">
                   <div className="font-semibold text-[#2C1A1D]">{order.customer_name}</div>
-                  <div className="text-[#777777]">{order.customer_mobile}</div>
+                  <div className="text-[#777777]">{order.customer_mobile}{order.customer_email ? ` • ${order.customer_email}` : ''}</div>
                 </div>
               </div>
 

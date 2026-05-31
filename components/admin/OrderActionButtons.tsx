@@ -3,16 +3,19 @@
 import { useTransition, useState } from "react";
 import { CheckCircle, Clock, Trash2, Edit3, X } from "lucide-react";
 import { updateOrderStatus, deleteOrder } from "@/app/(admin)/admin/actions";
+import { useRouter } from "next/navigation";
 
 export default function OrderActionButtons({ orderId, status }: { orderId: string, status: string }) {
   const [isPending, startTransition] = useTransition();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showStatusMenu, setShowStatusMenu] = useState(false);
+  const router = useRouter();
 
   const handleUpdate = (newStatus: string) => {
     startTransition(async () => {
       await updateOrderStatus(orderId, newStatus);
       setShowStatusMenu(false);
+      router.refresh();
     });
   };
 
@@ -20,6 +23,7 @@ export default function OrderActionButtons({ orderId, status }: { orderId: strin
     startTransition(async () => {
       await deleteOrder(orderId);
       setShowDeleteConfirm(false);
+      router.refresh();
     });
   };
 

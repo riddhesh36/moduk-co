@@ -37,7 +37,7 @@ export function Footer() {
         <div className="mt-12 pt-8 border-t border-cream/10 flex flex-col md:flex-row items-center justify-between gap-4 text-[13px] text-cream/50">
           <p>© {new Date().getFullYear()} Moduk & Co. All rights reserved.</p>
           <div className="flex gap-4">
-            <Link href="#" className="hover:text-rose transition-colors">Instagram</Link>
+            <a href="https://instagram.com/modukandco" target="_blank" rel="noopener noreferrer" className="hover:text-rose transition-colors">Instagram</a>
           </div>
         </div>
       </div>

@@ -25,7 +25,9 @@ export async function POST(req: Request) {
     // 2. Call Razorpay Payment Links API
     let paymentLink;
     try {
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+      const host = req.headers.get('host') || 'localhost:3000';
+      const protocol = host.includes('localhost') ? 'http' : 'https';
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `${protocol}://${host}`;
       const contactNo = `+91${order.customer_mobile.replace(/\D/g, '').slice(-10)}`;
 
       paymentLink = await razorpay.paymentLink.create({

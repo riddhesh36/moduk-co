@@ -155,7 +155,7 @@ export default function ProductDetailClient({ product, slots }: ProductDetailCli
         description="Please select a delivery slot before adding items to your cart."
       />
       <Toast 
-        message={`${product.name} added to cart!`}
+        message={`${quantity}x ${product.name} added to cart`}
         isVisible={showToast}
         onClose={() => setShowToast(false)}
       />

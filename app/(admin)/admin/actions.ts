@@ -94,6 +94,7 @@ export async function updateOrderStatus(orderId: string, newStatus: string) {
 
   // Revalidate the admin dashboard so changes reflect immediately
   revalidatePath('/admin');
+  revalidatePath('/admin/orders');
   return { success: true };
 }
 
@@ -110,6 +111,7 @@ export async function deleteOrder(orderId: string) {
   }
 
   revalidatePath('/admin');
+  revalidatePath('/admin/orders');
   return { success: true };
 }
 

@@ -47,14 +47,14 @@ export default async function DeliveryPage() {
             
             <div className="space-y-4 w-full">
               <div className="p-3 bg-[#FBF0DC]/30 border border-[#B69141]/10 rounded-xl">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#B69141] block mb-1">Zone 1 — ₹50 Delivery Fee</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#B69141] block mb-1">Zone 1 — ₹100 Delivery Fee (Free over ₹399)</span>
                 <p className="text-xs text-text-muted leading-relaxed">
                   Parel, Lalbaug, Dadar, Matunga, Sion, Mahim, Byculla, Mazgaon
                 </p>
               </div>
 
               <div className="p-3 bg-[#FBF0DC]/30 border border-[#B69141]/10 rounded-xl">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#B69141] block mb-1">Zone 2 — ₹80 Delivery Fee</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#B69141] block mb-1">Zone 2 — ₹100 Delivery Fee (Free over ₹399)</span>
                 <p className="text-xs text-text-muted leading-relaxed">
                   Worli, Prabhadevi, Wadala, Santacruz, Chembur, Vile Parle, Andheri
                 </p>
