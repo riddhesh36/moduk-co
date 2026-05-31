@@ -16,7 +16,7 @@ export async function sendOTP(mobile: string) {
     {
       cookies: {
         getAll() { return cookieStore.getAll(); },
-        setAll() {},
+        setAll() { },
       },
     }
   );
@@ -39,7 +39,7 @@ export async function sendOTP(mobile: string) {
     const apiKey = process.env.FAST2SMS_API_KEY;
     if (!apiKey) {
       console.log(`[DEV MODE] API Key missing. OTP for ${mobile} is ${otp}`);
-      return { success: true }; 
+      return { success: true };
     }
 
     const response = await fetch(`https://www.fast2sms.com/dev/bulkV2?authorization=${apiKey}&variables_values=${otp}&route=otp&numbers=${mobile}`, {
@@ -47,7 +47,7 @@ export async function sendOTP(mobile: string) {
     });
 
     const result = await response.json();
-    
+
     if (!result.return) {
       console.error("Fast2SMS API Error:", result);
       return { success: false, error: result.message || "Failed to deliver SMS." };
@@ -69,7 +69,7 @@ export async function verifyOTP(mobile: string, otp: string) {
     {
       cookies: {
         getAll() { return cookieStore.getAll(); },
-        setAll() {},
+        setAll() { },
       },
     }
   );
@@ -89,7 +89,7 @@ export async function verifyOTP(mobile: string, otp: string) {
   }
 
   // Success! Set a cookie to remember the user
-  cookieStore.set("customer_mobile", mobile, { 
+  cookieStore.set("customer_mobile", mobile, {
     maxAge: 30 * 24 * 60 * 60, // 30 days
     httpOnly: true,
     secure: process.env.NODE_ENV === "production"
@@ -109,7 +109,7 @@ export async function sendEmailOTP(email: string) {
     {
       cookies: {
         getAll() { return cookieStore.getAll(); },
-        setAll() {},
+        setAll() { },
       },
     }
   );
@@ -142,7 +142,7 @@ export async function sendEmailOTP(email: string) {
         'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        from: 'Moduk & Co <onboarding@resend.dev>', // Update to verified domain in production
+        from: 'Moduk & Co <otp@modukandco.in>', // Make sure to verify modukandco.in on Resend Dashboard
         to: email,
         subject: 'Your Moduk & Co Login OTP',
         html: `
@@ -182,7 +182,7 @@ export async function verifyEmailOTP(email: string, otp: string) {
     {
       cookies: {
         getAll() { return cookieStore.getAll(); },
-        setAll() {},
+        setAll() { },
       },
     }
   );
@@ -202,7 +202,7 @@ export async function verifyEmailOTP(email: string, otp: string) {
   }
 
   // Success! Set a cookie to remember the user
-  cookieStore.set("customer_email", email, { 
+  cookieStore.set("customer_email", email, {
     maxAge: 30 * 24 * 60 * 60, // 30 days
     httpOnly: true,
     secure: process.env.NODE_ENV === "production"
@@ -234,13 +234,13 @@ export async function getCustomerOrders() {
     {
       cookies: {
         getAll() { return cookieStore.getAll(); },
-        setAll() {},
+        setAll() { },
       },
     }
   );
 
   let query = supabase.from("orders").select("*, delivery_slots(label)");
-  
+
   if (email) {
     query = query.eq("customer_email", email);
   } else if (mobile) {
