@@ -11,6 +11,7 @@ import { AlertDialog } from "@/components/ui/AlertDialog";
 import confetti from "canvas-confetti";
 import { checkDeliveryZone, type ZoneResult, KITCHEN_ADDRESS, BORZO_LINK } from "@/lib/deliveryZones";
 import { ZoneStatusBadge } from "@/components/ZoneStatusBadge";
+import { getCustomerOrders } from "@/app/(store)/track/actions";
 
 export default function CheckoutPage() {
   const { items, totalPrice, clearCart } = useCart();
@@ -65,6 +66,29 @@ export default function CheckoutPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
+
+  // Prefill form from past order details if customer_email/customer_mobile session cookie exists
+  useEffect(() => {
+    const prefillFromLastOrder = async () => {
+      try {
+        const res = await getCustomerOrders();
+        if (res.success && res.orders && res.orders.length > 0) {
+          const lastOrder = res.orders[0];
+          setFormData(prev => ({
+            ...prev,
+            name: lastOrder.customer_name || prev.name,
+            mobile: lastOrder.customer_mobile || prev.mobile,
+            email: lastOrder.customer_email || prev.email,
+            address: lastOrder.address_line1 || prev.address,
+            pincode: lastOrder.address_pincode || prev.pincode,
+          }));
+        }
+      } catch (err) {
+        console.error("Failed to prefill checkout form from last order:", err);
+      }
+    };
+    prefillFromLastOrder();
+  }, []);
 
   // Delivery Option State
   const [deliveryOption, setDeliveryOption] = useState<"delivery" | "pickup">("delivery");
