@@ -27,6 +27,7 @@ export function Footer() {
               <h3 className="font-dmsans text-[13px] font-semibold tracking-widest text-cream/50 uppercase">Company</h3>
               <Link href="/about" className="text-[15px] hover:text-rose transition-colors">Our Story</Link>
               <Link href="/faq" className="text-[15px] hover:text-rose transition-colors">FAQs</Link>
+              <Link href="/terms" className="text-[15px] hover:text-rose transition-colors" id="footer-terms-link">Terms & Conditions</Link>
               <WhatsAppButton variant="link" className="text-[15px]" />
             </div>
           </div>

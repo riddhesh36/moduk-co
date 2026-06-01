@@ -12,7 +12,7 @@ export default async function DeliveryPage() {
     {
       cookies: {
         getAll() { return cookieStore.getAll(); },
-        setAll() {},
+        setAll() { },
       },
     }
   );
@@ -26,7 +26,7 @@ export default async function DeliveryPage() {
   return (
     <div className="w-full bg-cream min-h-screen py-16 px-6">
       <div className="max-w-4xl mx-auto">
-        
+
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-playfair font-bold text-dark mb-4">Delivery Information</h1>
           <p className="text-lg text-text-muted max-w-xl mx-auto">
@@ -35,7 +35,7 @@ export default async function DeliveryPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-          
+
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-dark/5 flex flex-col items-start text-left">
             <div className="w-12 h-12 bg-rose/10 text-rose rounded-xl flex items-center justify-center mb-6">
               <Truck size={24} />
@@ -44,7 +44,7 @@ export default async function DeliveryPage() {
             <p className="text-text-body mb-4 leading-relaxed">
               We hand-deliver our fresh modaks across selected zones in Mumbai:
             </p>
-            
+
             <div className="space-y-4 w-full">
               <div className="p-3 bg-[#FBF0DC]/30 border border-[#B69141]/10 rounded-xl">
                 <span className="text-xs font-bold uppercase tracking-wider text-[#B69141] block mb-1">Zone 1 — ₹100 Delivery Fee (Free over ₹399)</span>
@@ -53,17 +53,10 @@ export default async function DeliveryPage() {
                 </p>
               </div>
 
-              <div className="p-3 bg-[#FBF0DC]/30 border border-[#B69141]/10 rounded-xl">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#B69141] block mb-1">Zone 2 — ₹100 Delivery Fee (Free over ₹399)</span>
-                <p className="text-xs text-text-muted leading-relaxed">
-                  Worli, Prabhadevi, Wadala, Santacruz, Chembur, Vile Parle, Andheri
-                </p>
-              </div>
-
               <div className="p-3 border border-dashed border-dark/10 rounded-xl">
                 <span className="text-xs font-bold uppercase tracking-wider text-text-muted block mb-1">Outside these zones?</span>
                 <p className="text-xs text-text-body leading-relaxed">
-                  Self-pickup is available from our Lalbaug kitchen, or you can arrange your own Borzo delivery. 
+                  Self-pickup is available from our Lalbaug & Thane kitchen, or you can arrange your own Borzo delivery.
                   {" "}
                   <a href="https://wa.me/918591781695" target="_blank" rel="noopener noreferrer" className="font-semibold text-[#B69141] hover:text-[#C4617A] underline">
                     WhatsApp us to coordinate
@@ -72,7 +65,7 @@ export default async function DeliveryPage() {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-dark/5 flex flex-col items-start text-left">
             <div className="w-12 h-12 bg-rose/10 text-rose rounded-xl flex items-center justify-center mb-6">
               <Clock size={24} />
@@ -88,7 +81,7 @@ export default async function DeliveryPage() {
                     <span className="font-semibold text-dark">{slot.label}</span>
                     {slot.slot_date && <span className="text-[10px] text-text-muted">Date: {new Date(slot.slot_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>}
                   </div>
-                  <span className="text-xs text-text-muted bg-cream px-2 py-1 rounded">Cut-off: {slot.cutoff_time.slice(0,5)}</span>
+                  <span className="text-xs text-text-muted bg-cream px-2 py-1 rounded">Cut-off: {slot.cutoff_time.slice(0, 5)}</span>
                 </div>
               ))}
               {(!slots || slots.length === 0) && (

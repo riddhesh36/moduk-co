@@ -215,7 +215,7 @@ export default function Testimonials3D() {
 
   return (
     <section 
-      className="py-20 md:py-28 bg-cream/30 overflow-hidden border-t border-dark/5 flex flex-col items-center select-none"
+      className="py-20 md:py-28 bg-white overflow-hidden border-t border-dark/5 flex flex-col items-center select-none"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -224,7 +224,7 @@ export default function Testimonials3D() {
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-playfair font-bold text-dark tracking-tight">
           What our clients say
         </h2>
-        <p className="mt-4 text-text-muted max-w-md mx-auto text-sm md:text-base">
+        <p className="mt-4 text-text-muted max-w-md mx-auto text-sm md:text-base font-dmsans">
           Here is what our lovely community has to say about our handcrafted modaks.
         </p>
       </div>
@@ -263,10 +263,10 @@ export default function Testimonials3D() {
             return (
               <motion.div
                 key={idx}
-                className={`absolute w-[280px] sm:w-[320px] md:w-[350px] h-[280px] md:h-[300px] p-6 md:p-8 rounded-[24px] border bg-[#FDFBF9] shadow-[0_10px_35px_rgba(44,26,29,0.03)] flex flex-col justify-between transition-shadow duration-300 ${
+                className={`absolute w-[280px] sm:w-[320px] md:w-[350px] h-[280px] md:h-[300px] p-6 md:p-8 rounded-[24px] border bg-[#D3728B] shadow-[0_10px_35px_rgba(44,26,29,0.08)] flex flex-col justify-between transition-shadow duration-300 ${
                   distance === 0 
-                    ? "border-rose/20 shadow-[0_15px_40px_rgba(196,97,122,0.08)]" 
-                    : "border-dark/[0.04]"
+                    ? "border-[#C4617A] shadow-[0_15px_40px_rgba(196,97,122,0.22)]" 
+                    : "border-transparent"
                 }`}
                 style={{
                   pointerEvents: distance === 0 ? "auto" : "none",
@@ -292,34 +292,32 @@ export default function Testimonials3D() {
               >
                 {/* Review Content */}
                 <div>
-                  <h3 className="font-dmsans font-bold text-dark text-base md:text-lg mb-3 tracking-tight">
+                  <h3 className="font-dmsans font-bold text-white text-base md:text-lg mb-3 tracking-tight">
                     {review.title}
                   </h3>
-                  <p className="text-[12px] md:text-sm text-text-muted leading-relaxed font-medium font-dmsans italic line-clamp-5 md:line-clamp-6">
+                  <p className="text-[12px] md:text-sm text-cream/90 leading-relaxed font-medium font-dmsans italic line-clamp-5 md:line-clamp-6">
                     &ldquo;{review.text}&rdquo;
                   </p>
                 </div>
 
                 {/* Reviewer Details */}
-                <div className="flex items-center gap-3.5 pt-4 border-t border-dark/[0.04]">
+                <div className="flex items-center gap-3.5 pt-4 border-t border-white/15">
                   {/* Initials Avatar */}
-                  <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${review.bgGradient} flex items-center justify-center font-bold text-[13px] tracking-wider shrink-0 shadow-inner`}>
+                  <div className="w-10 h-10 rounded-full bg-white text-[#D3728B] flex items-center justify-center font-bold text-[13px] tracking-wider shrink-0 shadow-sm">
                     {review.initials}
                   </div>
                   
                   {/* Text Details */}
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-dmsans font-bold text-dark text-[13px] md:text-[14px] truncate leading-tight">
+                  <div className="flex-1 min-w-0 font-dmsans">
+                    <h4 className="font-bold text-white text-[13px] md:text-[14px] truncate leading-tight">
                       {review.name}
                     </h4>
-                    <p className="text-[10px] md:text-[11px] text-text-muted truncate mt-0.5 flex items-center gap-1 font-medium">
-                      {review.handle}
-                      <span>•</span>
+                    <p className="text-[10px] md:text-[11px] text-cream/70 truncate mt-0.5 flex items-center gap-1 font-medium">
                       <span className="inline-flex items-center gap-0.5">
                         {review.source.toLowerCase().includes("instagram") ? (
-                          <InstagramIcon size={9} className="text-rose" />
+                          <InstagramIcon size={9} className="text-cream" />
                         ) : (
-                          <MessageCircle size={8} className="text-emerald-500" />
+                          <MessageCircle size={8} className="text-cream/90" />
                         )}
                         {review.source}
                       </span>

@@ -14,7 +14,7 @@ export default function AboutPage() {
         </div>
 
         <div className="w-full aspect-[4/3] md:aspect-[16/10] bg-blush rounded-xl overflow-hidden mb-16 relative flex items-center justify-center border border-rose/10">
-          <Image src="/images/story.JPG" alt="About" fill className="object-cover object-center" />
+          <Image src="/images/aabout1.jpg" alt="About" fill className="object-cover object-center" />
           <div className="absolute inset-0 bg-rose/5" />
 
         </div>
@@ -45,7 +45,7 @@ export default function AboutPage() {
             With their love behind me and a whisk in my hand, a <strong>small idea slowly became something real</strong>.
           </p>
           <p className="mb-6">
-            And that&apos;s how, after a little drama and a lot of deliciousness… <em>drum roll please</em> … <strong>𝑀𝑜𝒹𝓊𝓀 &amp; 𝒞𝑜.</strong> was born.
+            And that&apos;s how, after a little drama and a lot of deliciousness… <em>drum roll please</em> … <strong className="italic text-rose">Moduk &amp; Co.</strong> was born.
           </p>
           <p className="mb-6">
             Now we make modaks the way they always should have been made — <strong>fresh, authentic, pure, and free from adulteration</strong>. <strong>No shortcuts, no nonsense, no pretending to be premium… because we are.</strong>

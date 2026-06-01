@@ -10,7 +10,6 @@ const FAQS = [
     questions: [
       { q: "Where do you deliver?", a: "We deliver across Mumbai and Navi Mumbai. If your pincode is outside our serviceable area, our checkout page will notify you." },
       { q: "How far in advance should I order?", a: "We recommend booking your slot as early as possible. Because we handcraft our modaks fresh daily in limited batches, slots often fill up quickly and we close taking orders for the day once capacity is reached." },
-      { q: "Do you offer Cash on Delivery (COD)?", a: "Yes, we accept both UPI (GPay, Paytm, PhonePe) and Cash on Delivery." },
     ]
   },
   {
@@ -36,7 +35,7 @@ export default function FAQPage() {
   return (
     <div className="w-full bg-cream min-h-screen py-16 px-6">
       <div className="max-w-3xl mx-auto">
-        
+
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-playfair font-bold text-dark mb-4">Frequently Asked Questions</h1>
           <p className="text-lg text-text-muted max-w-xl mx-auto">
@@ -56,21 +55,21 @@ export default function FAQPage() {
                   const isOpen = openIndex === id;
 
                   return (
-                    <div 
-                      key={id} 
+                    <div
+                      key={id}
                       className={cn(
                         "bg-white border rounded-xl overflow-hidden transition-colors",
                         isOpen ? "border-rose shadow-sm" : "border-dark/5 hover:border-dark/20"
                       )}
                     >
-                      <button 
+                      <button
                         className="w-full text-left p-5 flex justify-between items-center gap-4 focus:outline-none"
                         onClick={() => setOpenIndex(isOpen ? "" : id)}
                       >
                         <span className="font-semibold text-dark md:text-lg">{faq.q}</span>
                         <ChevronDown className={cn("shrink-0 text-text-muted transition-transform", isOpen && "rotate-180 text-rose")} />
                       </button>
-                      <div 
+                      <div
                         className={cn(
                           "px-5 overflow-hidden transition-all duration-300 ease-in-out",
                           isOpen ? "max-h-96 pb-5 opacity-100" : "max-h-0 opacity-0"
