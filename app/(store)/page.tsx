@@ -17,7 +17,7 @@ export default async function Home() {
     {
       cookies: {
         getAll() { return cookieStore.getAll(); },
-        setAll() {},
+        setAll() { },
       },
     }
   );
@@ -40,7 +40,7 @@ export default async function Home() {
     <div className="w-full">
       {/* DELIVERY NUDGE */}
       <div className="w-full bg-rose text-white text-center py-2 px-4 text-xs tracking-wide uppercase font-semibold">
-        🎉 New Website Launch Offer! Get 10% OFF your first order with code MODUK10.
+        🎉 New Website Launch Offer! Get 10% OFF your first order with code NEW10.
       </div>
 
       {/* BENTO HERO — includes How It Works + Brand Story */}
@@ -53,9 +53,9 @@ export default async function Home() {
             <h2 className="text-3xl md:text-4xl font-playfair font-bold text-dark">Our Signature Modaks</h2>
             <p className="mt-4 text-text-muted">Freshly steamed today, delivered to you in hours.</p>
           </div>
-          
+
           <HomeProducts products={displayProducts} slots={slots || []} />
-          
+
           <div className="mt-16 text-center">
             <Link href="/shop" passHref>
               <Button variant="secondary" size="lg">View All Products</Button>
