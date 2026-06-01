@@ -463,10 +463,10 @@ export default function CheckoutPage() {
                   <h2 className="text-xl font-bold text-dark mb-4">Select Pickup Location</h2>
                   <div className="flex flex-col gap-4">
                     {/* Lalbaug Location */}
-                    <div
+                    <button
                       type="button"
                       onClick={() => setPickupLocation("lalbaug")}
-                      className={`p-4 border rounded-xl cursor-pointer transition-all text-left ${
+                      className={`w-full p-4 border rounded-xl cursor-pointer transition-all text-left ${
                         pickupLocation === "lalbaug"
                           ? "border-rose bg-blush/10 shadow-sm"
                           : "border-dark/10 hover:border-dark/20"
@@ -487,13 +487,13 @@ export default function CheckoutPage() {
                           <p className="text-[11px] font-semibold text-text-muted mt-1">Contact: +91 85917 81695</p>
                         </div>
                       </div>
-                    </div>
+                    </button>
 
                     {/* Thane Location */}
-                    <div
+                    <button
                       type="button"
                       onClick={() => setPickupLocation("thane")}
-                      className={`p-4 border rounded-xl cursor-pointer transition-all text-left ${
+                      className={`w-full p-4 border rounded-xl cursor-pointer transition-all text-left ${
                         pickupLocation === "thane"
                           ? "border-rose bg-blush/10 shadow-sm"
                           : "border-dark/10 hover:border-dark/20"
@@ -514,7 +514,7 @@ export default function CheckoutPage() {
                           <p className="text-[11px] font-semibold text-text-muted mt-1">Contact: +91 75063 57487</p>
                         </div>
                       </div>
-                    </div>
+                    </button>
                   </div>
                   <div className="pt-4 flex items-center gap-2">
                     <span className="inline-block w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>

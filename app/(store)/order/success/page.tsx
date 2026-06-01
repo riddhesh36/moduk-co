@@ -252,14 +252,14 @@ function SuccessPageContent() {
                   </div>
                 )}
 
-                {o.delivery_fee > 0 && (
+                {(o.delivery_fee ?? 0) > 0 && (
                   <div className="flex justify-between border-b border-dark/5 pb-2">
                     <span className="text-text-muted">Delivery Fee</span>
                     <span className="font-semibold text-dark">₹{o.delivery_fee}</span>
                   </div>
                 )}
 
-                {o.discount_amount > 0 && (
+                {(o.discount_amount ?? 0) > 0 && (
                   <div className="flex justify-between border-b border-dark/5 pb-2 text-green-700">
                     <span>Discount Applied</span>
                     <span className="font-bold">-₹{o.discount_amount}</span>

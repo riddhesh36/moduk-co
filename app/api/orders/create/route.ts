@@ -124,6 +124,7 @@ export async function POST(req: Request) {
     }
 
     // 4. Calculate delivery fees per slot group
+    let validatedZone: { zone: 1 | 2; fee: number; label: string } | null = null;
     if (delivery_option === "delivery") {
       const zoneResult = checkDeliveryZone(pincode || "");
       if (zoneResult.status === "out_of_zone") {
@@ -132,16 +133,16 @@ export async function POST(req: Request) {
       if (zoneResult.status !== "serviceable") {
         return NextResponse.json({ error: "Invalid or missing pincode for delivery" }, { status: 400 });
       }
+      validatedZone = zoneResult;
     }
 
     const groupsWithFee = groupedSlots.map(group => {
       let slotDeliveryFee = 0;
       let slotDeliveryZone = null;
 
-      if (delivery_option === "delivery") {
-        const zoneResult = checkDeliveryZone(pincode || "");
-        slotDeliveryFee = group.subtotal > 399 ? 0 : zoneResult.fee;
-        slotDeliveryZone = zoneResult.zone;
+      if (delivery_option === "delivery" && validatedZone) {
+        slotDeliveryFee = group.subtotal > 399 ? 0 : validatedZone.fee;
+        slotDeliveryZone = validatedZone.zone;
       }
 
       return {
