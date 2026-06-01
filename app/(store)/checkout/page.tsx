@@ -92,6 +92,7 @@ export default function CheckoutPage() {
 
   // Delivery Option State
   const [deliveryOption, setDeliveryOption] = useState<"delivery" | "pickup">("delivery");
+  const [pickupLocation, setPickupLocation] = useState<"lalbaug" | "thane">("lalbaug");
   const [zoneResult, setZoneResult] = useState<ZoneResult>({ status: "unknown" });
 
   useEffect(() => {
@@ -103,12 +104,36 @@ export default function CheckoutPage() {
     }
   }, [formData.pincode]);
 
-  const deliveryFee =
-    deliveryOption === "pickup" || totalPrice > 399
-      ? 0
-      : zoneResult.status === "serviceable"
-      ? zoneResult.fee
-      : 0;
+  // Group items by slot for multi-slot processing
+  const uniqueSlotKeys = Array.from(new Set(items.map(item => `${item.selectedSlotId}_${item.selectedDate}`)));
+
+  const itemsBySlot = items.reduce((acc: { [key: string]: typeof items }, item) => {
+    const key = `${item.selectedSlotId}_${item.selectedDate}`;
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(item);
+    return acc;
+  }, {});
+
+  let totalDeliveryFee = 0;
+  const slotDetailsList = uniqueSlotKeys.map(key => {
+    const slotItems = itemsBySlot[key] || [];
+    const slotSubtotal = slotItems.reduce((acc, item) => acc + (item.product.price * item.quantity), 0);
+    let slotDeliveryFee = 0;
+    if (deliveryOption === "delivery") {
+      if (slotSubtotal <= 399 && zoneResult.status === "serviceable") {
+        slotDeliveryFee = zoneResult.fee;
+      }
+    }
+    totalDeliveryFee += slotDeliveryFee;
+    return {
+      key,
+      subtotal: slotSubtotal,
+      deliveryFee: slotDeliveryFee,
+      items: slotItems,
+      slotId: slotItems[0].selectedSlotId,
+      slotDate: slotItems[0].selectedDate
+    };
+  });
 
   // Confetti burst on successful coupon apply
   const fireCouponConfetti = useCallback(() => {
@@ -149,7 +174,7 @@ export default function CheckoutPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           code: couponCode.trim(),
-          cart_total: totalPrice + deliveryFee,
+          cart_total: totalPrice + totalDeliveryFee,
           customer_phone: formData.mobile,
         }),
       });
@@ -200,7 +225,7 @@ export default function CheckoutPage() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               code: appliedCoupon.code,
-              cart_total: totalPrice + deliveryFee,
+              cart_total: totalPrice + totalDeliveryFee,
               customer_phone: formData.mobile,
             }),
           });
@@ -230,7 +255,7 @@ export default function CheckoutPage() {
   };
 
   // Derived totals
-  const originalTotal = totalPrice + deliveryFee;
+  const originalTotal = totalPrice + totalDeliveryFee;
   const discountAmount = appliedCoupon?.discount_amount || 0;
   const finalTotal = originalTotal - discountAmount;
 
@@ -240,6 +265,12 @@ export default function CheckoutPage() {
       const firstItem = items && items.length > 0 ? items[0] : null;
       const selectedSlotId = firstItem ? firstItem.selectedSlotId : "";
 
+      const pickupAddress = pickupLocation === "lalbaug"
+        ? "Self-Pickup: Lalbaug (Aakash chs, building no.34, opposite of kalachowki police station, Lalbaug, MUMBAI - 400033) Contact: 8591781695"
+        : "Self-Pickup: Thane (Saidham chs-101, besides lakshman soma park, shantaram nagar thane, 400605) Contact: 7506357487";
+
+      const pickupPincode = pickupLocation === "lalbaug" ? "400033" : "400605";
+
       const res = await fetch("/api/orders/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -247,23 +278,24 @@ export default function CheckoutPage() {
           customer_name: formData.name,
           customer_phone: formData.mobile,
           customer_email: formData.email,
-          delivery_address: deliveryOption === "pickup" ? "Self-Pickup from Kitchen (Lalbaug)" : formData.address,
+          delivery_address: deliveryOption === "pickup" ? pickupAddress : formData.address,
           delivery_slot: selectedSlotId,
           slot_date: firstItem ? firstItem.selectedDate : 'today',
           items: items.map(item => ({ 
             product_id: item.product.id, 
             quantity: item.quantity,
+            selectedSlotId: item.selectedSlotId,
             selectedDate: item.selectedDate
           })),
           coupon_id: appliedCoupon?.coupon_id || null,
           discount_amount: discountAmount,
           original_total: originalTotal,
           final_total: finalTotal,
-          pincode: deliveryOption === "pickup" ? "400025" : formData.pincode,
+          pincode: deliveryOption === "pickup" ? pickupPincode : formData.pincode,
           notes: formData.notes,
           wa_opt_in: formData.waOptIn,
           delivery_option: deliveryOption,
-          delivery_fee: deliveryFee,
+          delivery_fee: totalDeliveryFee,
           delivery_zone: deliveryOption === "pickup" ? null : (zoneResult.status === "serviceable" ? zoneResult.zone : null),
         }),
       });
@@ -307,6 +339,11 @@ export default function CheckoutPage() {
             <h1 className="text-3xl font-playfair font-bold text-dark mb-8">Checkout</h1>
 
             <form id="checkout-form" onSubmit={handlePlaceOrder} className="space-y-8">
+              {uniqueSlotKeys.length > 1 && (
+                <div className="bg-rose/10 border border-rose/20 rounded-xl p-4 text-rose text-sm font-medium animate-in fade-in">
+                  ⚠️ <strong>Delivery Note:</strong> You have selected items for {uniqueSlotKeys.length} different slots. A separate delivery charge will apply to each slot.
+                </div>
+              )}
 
               {/* Contact Details */}
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-dark/5">
@@ -423,17 +460,65 @@ export default function CheckoutPage() {
                 </div>
               ) : (
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-dark/5 bg-gradient-to-br from-white to-[#FDF8F0]/30">
-                  <h2 className="text-xl font-bold text-dark mb-3">Pickup Location</h2>
-                  <div className="border border-[#FDF0F3] rounded-xl p-4 bg-[#FDF8F0]/50 space-y-2">
-                    <p className="text-sm font-bold text-dark">Moduk & Co. Kitchen</p>
-                    <p className="text-sm text-text-body">
-                      Aakash chs, building no.34, opposite of kalachowki police station<br />
-                      Lalbaug, MUMBAI - 400033
-                    </p>
-                    <div className="pt-2 flex items-center gap-2">
-                      <span className="inline-block w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
-                      <span className="text-xs font-semibold text-text-muted">Available for pickup during your selected slot</span>
+                  <h2 className="text-xl font-bold text-dark mb-4">Select Pickup Location</h2>
+                  <div className="flex flex-col gap-4">
+                    {/* Lalbaug Location */}
+                    <div
+                      type="button"
+                      onClick={() => setPickupLocation("lalbaug")}
+                      className={`p-4 border rounded-xl cursor-pointer transition-all text-left ${
+                        pickupLocation === "lalbaug"
+                          ? "border-rose bg-blush/10 shadow-sm"
+                          : "border-dark/10 hover:border-dark/20"
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <input
+                          type="radio"
+                          checked={pickupLocation === "lalbaug"}
+                          onChange={() => setPickupLocation("lalbaug")}
+                          className="accent-rose mt-1 shrink-0"
+                        />
+                        <div className="space-y-1">
+                          <p className="text-sm font-bold text-dark">Moduk & Co. Kitchen (Lalbaug)</p>
+                          <p className="text-xs text-text-body leading-relaxed">
+                            Aakash chs, building no.34, opposite of kalachowki police station, Lalbaug, MUMBAI - 400033
+                          </p>
+                          <p className="text-[11px] font-semibold text-text-muted mt-1">Contact: +91 85917 81695</p>
+                        </div>
+                      </div>
                     </div>
+
+                    {/* Thane Location */}
+                    <div
+                      type="button"
+                      onClick={() => setPickupLocation("thane")}
+                      className={`p-4 border rounded-xl cursor-pointer transition-all text-left ${
+                        pickupLocation === "thane"
+                          ? "border-rose bg-blush/10 shadow-sm"
+                          : "border-dark/10 hover:border-dark/20"
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <input
+                          type="radio"
+                          checked={pickupLocation === "thane"}
+                          onChange={() => setPickupLocation("thane")}
+                          className="accent-rose mt-1 shrink-0"
+                        />
+                        <div className="space-y-1">
+                          <p className="text-sm font-bold text-dark">Moduk & Co. Kitchen (Thane)</p>
+                          <p className="text-xs text-text-body leading-relaxed">
+                            Saidham chs-101, besides lakshman soma park, shantaram nagar thane, 400605
+                          </p>
+                          <p className="text-[11px] font-semibold text-text-muted mt-1">Contact: +91 75063 57487</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="pt-4 flex items-center gap-2">
+                    <span className="inline-block w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
+                    <span className="text-xs font-semibold text-text-muted">Available for pickup during your selected slot</span>
                   </div>
                 </div>
               )}
@@ -492,6 +577,8 @@ export default function CheckoutPage() {
                   <span>
                     {deliveryOption === "pickup"
                       ? "₹0"
+                      : uniqueSlotKeys.length > 1
+                      ? `₹${totalDeliveryFee}`
                       : totalPrice > 399
                       ? "Free"
                       : zoneResult.status === "serviceable"
@@ -499,6 +586,21 @@ export default function CheckoutPage() {
                       : "—"}
                   </span>
                 </div>
+
+                {uniqueSlotKeys.length > 1 && (
+                  <div className="text-[11px] text-text-muted mt-0.5 space-y-1 bg-cream/40 p-2.5 rounded-lg border border-dark/5">
+                    {slotDetailsList.map((slotDetail, idx) => {
+                      const slotMap = slots.find(s => s.id === slotDetail.slotId);
+                      const label = slotMap ? slotMap.label : "Morning Slot";
+                      return (
+                        <div key={idx} className="flex justify-between">
+                          <span>{formatDate(slotDetail.slotDate)} ({label}):</span>
+                          <span>{slotDetail.deliveryFee > 0 ? `₹${slotDetail.deliveryFee}` : "Free"}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
 
                 {/* Coupon Discount Line (if applied) */}
                 {appliedCoupon && (

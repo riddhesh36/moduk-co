@@ -13,13 +13,13 @@ export default function AboutPage() {
           </p>
         </div>
 
-        <div className="w-full aspect-[21/12] bg-blush rounded-2xl overflow-hidden mb-16 relative flex items-center justify-center border border-rose/10">
-          <Image src="/images/about-img.jpg" alt="About" fill className="object-cover" />
+        <div className="w-full aspect-[4/3] md:aspect-[16/10] bg-blush rounded-xl overflow-hidden mb-16 relative flex items-center justify-center border border-rose/10">
+          <Image src="/images/story.JPG" alt="About" fill className="object-cover object-center" />
           <div className="absolute inset-0 bg-rose/5" />
 
         </div>
 
-        <div className="prose prose-lg prose-rose prose-p:text-text-body font-dmsans max-w-3xl text-lg leading-relaxed">
+        <div className="prose prose-lg prose-rose prose-p:text-text-body font-garamond max-w-3xl text-xl leading-relaxed">
           <p className="mb-6">
             Some people start businesses after spotting a <strong>gap in the market</strong>.
           </p>

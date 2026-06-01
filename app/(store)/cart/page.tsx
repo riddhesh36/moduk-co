@@ -32,6 +32,8 @@ export default function CartPage() {
     return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
   };
 
+  const uniqueSlotKeys = Array.from(new Set(items.map(item => `${item.selectedSlotId}_${item.selectedDate}`)));
+
   if (items.length === 0) {
     return (
       <div className="w-full min-h-[60vh] bg-cream flex flex-col items-center justify-center p-6 text-center">
@@ -51,6 +53,12 @@ export default function CartPage() {
         {/* CART ITEMS */}
         <div className="flex-1">
           <h1 className="text-3xl font-playfair font-bold text-dark mb-8">Your Cart</h1>
+
+          {uniqueSlotKeys.length > 1 && (
+            <div className="bg-rose/10 border border-rose/20 rounded-xl p-4 text-rose text-sm font-medium mb-6">
+              ⚠️ <strong>Delivery Note:</strong> You have selected items for {uniqueSlotKeys.length} different slots. A separate delivery charge will apply to each slot.
+            </div>
+          )}
           
           <div className="flex flex-col gap-6">
             {items.map((item) => {
@@ -58,7 +66,7 @@ export default function CartPage() {
               const label = slotMap ? slotMap.label : "Morning Slot";
 
               return (
-                <div key={item.product.id} className="flex gap-4 bg-white p-4 rounded-xl border border-dark/5 shadow-sm">
+                <div key={`${item.product.id}-${item.selectedSlotId}-${item.selectedDate}`} className="flex gap-4 bg-white p-4 rounded-xl border border-dark/5 shadow-sm">
                   <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-blush shrink-0">
                     <Image src={item.product.image_url} alt={item.product.name} fill className="object-cover"/>
                   </div>
@@ -66,7 +74,7 @@ export default function CartPage() {
                     <div className="flex justify-between items-start">
                       <h3 className="font-bold text-dark">{item.product.name}</h3>
                       <button 
-                        onClick={() => removeFromCart(item.product.id)}
+                        onClick={() => removeFromCart(item.product.id, item.selectedSlotId, item.selectedDate)}
                         className="text-text-muted hover:text-rose p-1 transition-colors"
                         aria-label="Remove item"
                       >

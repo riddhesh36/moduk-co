@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { MOCK_PRODUCTS } from "@/lib/constants";
 import HomeProducts from "@/components/store/HomeProducts";
 import HeroSection from "@/components/store/HeroSection";
+import Testimonials3D from "@/components/store/Testimonials3D";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +40,7 @@ export default async function Home() {
     <div className="w-full">
       {/* DELIVERY NUDGE */}
       <div className="w-full bg-rose text-white text-center py-2 px-4 text-xs tracking-wide uppercase font-semibold">
-        Freshly handcrafted modaks · Follow us on Instagram @modukandco for slot updates
+        🎉 New Website Launch Offer! Get 10% OFF your first order with code MODUK10.
       </div>
 
       {/* BENTO HERO — includes How It Works + Brand Story */}
@@ -62,6 +63,9 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* TESTIMONIALS */}
+      <Testimonials3D />
     </div>
   );
 }

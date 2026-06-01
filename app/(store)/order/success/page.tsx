@@ -6,14 +6,15 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState, Suspense } from "react";
 import { getOrder } from "../[id]/actions";
 import { useSearchParams, useRouter } from "next/navigation";
+import { type Order, type OrderItem } from "@/types";
 
 function SuccessPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const orderId = searchParams.get("order_id");
   
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [order, setOrder] = useState<any>(null);
+  const [order, setOrder] = useState<Order | null>(null);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [pollCount, setPollCount] = useState(0);
@@ -29,6 +30,7 @@ function SuccessPageContent() {
     }
     if (res.success) {
       setOrder(res.order);
+      setOrders(res.orders || [res.order]);
     }
     setLoading(false);
     setRefreshing(false);
@@ -53,6 +55,7 @@ function SuccessPageContent() {
       const res = await getOrder(orderId);
       if (res.success) {
         setOrder(res.order);
+        setOrders(res.orders || [res.order]);
         if (res.order.status !== "payment_pending") {
           setRefreshing(false);
           return;
@@ -213,54 +216,71 @@ function SuccessPageContent() {
         {/* Dynamic Status Badge */}
         {statusBadge}
 
-        {/* Order Details Summary */}
-        <div className="bg-blush/20 rounded-2xl p-6 text-left border border-dark/5 mb-8 max-w-md mx-auto">
-          <h3 className="text-sm font-semibold text-dark uppercase tracking-widest mb-4 border-b border-dark/10 pb-2">
-            Order Summary
-          </h3>
-          <div className="flex flex-col gap-3 text-sm text-text-body">
-            <div className="flex justify-between border-b border-dark/5 pb-2">
-              <span className="text-text-muted">Order Number</span>
-              <span className="font-bold font-mono">{order.display_id}</span>
-            </div>
-            
-            {/* Render Items */}
-            {order.items && order.items.length > 0 && (
-              <div className="border-b border-dark/5 pb-2 flex flex-col gap-2">
-                <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">Items</span>
-                {order.items.map((item: { product?: { name: string; price: number }; quantity: number }, idx: number) => (
-                  <div key={idx} className="flex justify-between pl-1">
-                    <span className="text-text-body font-medium">
-                      {item.product?.name || "Modak"} <span className="text-text-muted text-xs">x{item.quantity}</span>
-                    </span>
-                    <span className="font-semibold text-dark">
-                      ₹{(item.product?.price || 0) * item.quantity}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {order.discount_amount > 0 && (
-              <div className="flex justify-between border-b border-dark/5 pb-2 text-green-700">
-                <span>Discount Applied</span>
-                <span className="font-bold">-₹{order.discount_amount}</span>
-              </div>
-            )}
-
-            <div className="flex justify-between border-b border-dark/5 pb-2">
-              <span className="text-text-muted">Total Amount</span>
-              <span className="font-bold text-rose">₹{order.total_amount}</span>
-            </div>
-
-            <div className="flex justify-between pt-1">
-              <span className="text-text-muted">Expected Delivery</span>
-              <span className="font-bold text-dark text-right">
-                {new Date(order.slot_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}<br/>
-                <span className="text-rose text-xs">{order.delivery_slots?.label || order.slot_id}</span>
-              </span>
-            </div>
+        {/* Consolidated Grand Total for multi-slot checkout */}
+        {orders.length > 1 && (
+          <div className="flex justify-between items-center max-w-md mx-auto p-4 mb-6 border border-rose/10 bg-blush/10 rounded-xl font-semibold">
+            <span className="text-dark">Total Paid (Consolidated):</span>
+            <span className="text-xl font-bold text-rose">
+              ₹{orders.reduce((acc, o) => acc + o.total_amount, 0)}
+            </span>
           </div>
+        )}
+
+        {/* Order Details Summary */}
+        <div className="space-y-6 max-w-md mx-auto mb-8">
+          {orders.map((o, orderIdx) => (
+            <div key={orderIdx} className="bg-blush/20 rounded-2xl p-6 text-left border border-dark/5 shadow-sm">
+              <h3 className="text-sm font-semibold text-dark uppercase tracking-widest mb-4 border-b border-dark/10 pb-2 flex justify-between items-center">
+                <span>Order Summary</span>
+                <span className="font-mono font-bold text-xs bg-rose/10 text-rose px-2 py-0.5 rounded-full">{o.display_id}</span>
+              </h3>
+              <div className="flex flex-col gap-3 text-sm text-text-body">
+                {/* Render Items */}
+                {o.items && o.items.length > 0 && (
+                  <div className="border-b border-dark/5 pb-2 flex flex-col gap-2">
+                    <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">Items</span>
+                    {o.items.map((item: OrderItem, idx: number) => (
+                      <div key={idx} className="flex justify-between pl-1">
+                        <span className="text-text-body font-medium">
+                          {item.product?.name || "Modak"} <span className="text-text-muted text-xs">x{item.quantity}</span>
+                        </span>
+                        <span className="font-semibold text-dark">
+                          ₹{(item.product?.price || 0) * item.quantity}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {o.delivery_fee > 0 && (
+                  <div className="flex justify-between border-b border-dark/5 pb-2">
+                    <span className="text-text-muted">Delivery Fee</span>
+                    <span className="font-semibold text-dark">₹{o.delivery_fee}</span>
+                  </div>
+                )}
+
+                {o.discount_amount > 0 && (
+                  <div className="flex justify-between border-b border-dark/5 pb-2 text-green-700">
+                    <span>Discount Applied</span>
+                    <span className="font-bold">-₹{o.discount_amount}</span>
+                  </div>
+                )}
+
+                <div className="flex justify-between border-b border-dark/5 pb-2 font-semibold">
+                  <span className="text-text-muted">Order Total</span>
+                  <span className="text-rose">₹{o.total_amount}</span>
+                </div>
+
+                <div className="flex justify-between pt-1">
+                  <span className="text-text-muted">Expected Delivery</span>
+                  <span className="font-bold text-dark text-right">
+                    {new Date(o.slot_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}<br/>
+                    <span className="text-rose text-xs">{o.delivery_slots?.label || o.slot_id}</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* CTAs */}

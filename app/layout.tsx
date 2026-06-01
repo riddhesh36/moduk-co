@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Playfair_Display, DM_Sans } from "next/font/google";
+import { Playfair_Display, DM_Sans, EB_Garamond } from "next/font/google";
 import "./globals.css";
 import { CookieConsent } from "@/components/layout/CookieConsent";
 import Script from "next/script";
@@ -15,6 +15,13 @@ const dmSans = DM_Sans({
   subsets: ["latin"],
   variable: "--font-dm-sans",
   weight: ["400", "500", "600", "700"],
+});
+
+const ebGaramond = EB_Garamond({
+  subsets: ["latin"],
+  variable: "--font-eb-garamond",
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
@@ -54,7 +61,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${playfair.variable} ${dmSans.variable} font-dmsans antialiased text-text-body bg-cream min-h-screen flex flex-col`}
+        className={`${playfair.variable} ${dmSans.variable} ${ebGaramond.variable} font-dmsans antialiased text-text-body bg-cream min-h-screen flex flex-col`}
       >
         {process.env.NEXT_PUBLIC_CLARITY_ID && (
           <Script id="microsoft-clarity" strategy="afterInteractive">

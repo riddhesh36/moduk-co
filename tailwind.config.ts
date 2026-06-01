@@ -30,6 +30,7 @@ const config: Config = {
       fontFamily: {
         playfair: ["var(--font-playfair)", "serif"],
         dmsans: ["var(--font-dm-sans)", "sans-serif"],
+        garamond: ["var(--font-eb-garamond)", "serif"],
       },
     },
   },

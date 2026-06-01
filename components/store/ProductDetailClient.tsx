@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2, ChevronDown, Info } from "lucide-react";
 import { useCart } from "@/components/cart/CartContext";
 import { AlertDialog } from "@/components/ui/AlertDialog";
-import { Toast } from "@/components/ui/Toast";
 import { type Product, type Slot } from "@/types";
 
 interface ProductDetailClientProps {
@@ -16,14 +15,13 @@ interface ProductDetailClientProps {
 }
 
 export default function ProductDetailClient({ product, slots }: ProductDetailClientProps) {
-  const { addToCart } = useCart();
+  const { addToCart, showToast } = useCart();
 
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>("19th April");
   const [quantity, setQuantity] = useState(1);
   const [accordionOpen, setAccordionOpen] = useState(false);
   const [showValidationAlert, setShowValidationAlert] = useState(false);
-  const [showToast, setShowToast] = useState(false);
 
   const handleAddToCart = () => {
     if (!selectedSlot) {
@@ -38,7 +36,7 @@ export default function ProductDetailClient({ product, slots }: ProductDetailCli
       selectedDate
     });
     
-    setShowToast(true);
+    showToast(`${quantity}x ${product.name} added to cart`);
   };
 
   return (
@@ -153,11 +151,6 @@ export default function ProductDetailClient({ product, slots }: ProductDetailCli
         onClose={() => setShowValidationAlert(false)}
         title="Slot Required"
         description="Please select a delivery slot before adding items to your cart."
-      />
-      <Toast 
-        message={`${quantity}x ${product.name} added to cart`}
-        isVisible={showToast}
-        onClose={() => setShowToast(false)}
       />
     </div>
   );

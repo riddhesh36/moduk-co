@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, Minus, ShoppingCart } from "lucide-react";
 import { Button } from "./button";
 import { SlotSelector } from "./SlotSelector";
-import { Toast } from "./Toast";
 import { type Product, type Slot } from "@/types";
 import { useCart } from "@/components/cart/CartContext";
 import { AlertDialog } from "./AlertDialog";
@@ -24,13 +23,11 @@ export function QuickAddDialog({
   onClose,
   slots,
 }: QuickAddDialogProps) {
-  const { addToCart } = useCart();
+  const { addToCart, showToast } = useCart();
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
   const [showValidationAlert, setShowValidationAlert] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
 
   // Track previous isOpen and product.id props to reset state when dialog opens or product changes
   const [prevIsOpen, setPrevIsOpen] = useState(false);
@@ -46,8 +43,6 @@ export function QuickAddDialog({
       setSelectedSlot(null);
       setSelectedDate("");
       setShowValidationAlert(false);
-      setShowToast(false);
-      setToastMessage("");
     }
   }
 
@@ -66,8 +61,7 @@ export function QuickAddDialog({
       selectedDate,
     });
     
-    setToastMessage(`${quantity}x ${product.name} added to cart`);
-    setShowToast(true);
+    showToast(`${quantity}x ${product.name} added to cart`);
     onClose();
   };
 
@@ -168,11 +162,6 @@ export function QuickAddDialog({
       onClose={() => setShowValidationAlert(false)}
       title="Slot Required"
       description="Please select a delivery slot before adding items to your cart."
-    />
-    <Toast 
-      message={toastMessage}
-      isVisible={showToast}
-      onClose={() => setShowToast(false)}
     />
     </>
   );

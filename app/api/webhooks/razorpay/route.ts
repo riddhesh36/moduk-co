@@ -52,107 +52,122 @@ export async function POST(req: Request) {
       
       console.log(`[RAZORPAY WEBHOOK] Processing paid order: ${orderId}, payment_id: ${razorpay_payment_id}`);
 
-      // Fetch the order from Supabase
-      const { data: order, error: fetchErr } = await supabaseAdmin
+      // Fetch all orders sharing this payment link ID
+      let orders = [];
+      const { data: fetchOrders, error: fetchErr } = await supabaseAdmin
         .from('orders')
         .select('*')
-        .eq('display_id', orderId)
-        .single();
+        .eq('payment_link_id', paymentLinkEntity.id);
 
-      if (fetchErr || !order) {
-        console.error(`Order ${orderId} not found in Supabase:`, fetchErr);
-        return NextResponse.json({ error: "Order not found" }, { status: 404 });
-      }
-
-      // Prevent duplicate processing if already confirmed
-      if (order.status === 'confirmed') {
-        console.log(`Order ${orderId} is already confirmed. Skipping.`);
-        return NextResponse.json({ success: true, message: "Already confirmed" });
-      }
-
-      // Update Order Status and Payment Status
-      const { error: updateErr } = await supabaseAdmin
-        .from('orders')
-        .update({
-          status: 'confirmed',
-          payment_status: 'paid',
-          payment_id: razorpay_payment_id || null
-        })
-        .eq('id', order.id);
-
-      if (updateErr) {
-        console.error(`Failed to update order ${orderId} status:`, updateErr);
-        return NextResponse.json({ error: "Failed to update order" }, { status: 500 });
-      }
-
-      // Process Coupon Usage if coupon exists
-      if (order.coupon_id) {
-        try {
-          // Log coupon use
-          const { error: couponUseErr } = await supabaseAdmin
-            .from('coupon_uses')
-            .insert([{
-              coupon_id: order.coupon_id,
-              order_id: order.id, // UUID
-              user_phone: order.customer_mobile,
-              discount_applied: order.discount_amount || 0
-            }]);
-
-          if (couponUseErr) {
-            console.error("Failed to insert coupon use record:", couponUseErr);
-          }
-
-          // Increment coupon uses count
-          const { data: coupon } = await supabaseAdmin
-            .from('coupons')
-            .select('uses_count')
-            .eq('id', order.coupon_id)
-            .single();
-
-          if (coupon) {
-            await supabaseAdmin
-              .from('coupons')
-              .update({ uses_count: (coupon.uses_count || 0) + 1 })
-              .eq('id', order.coupon_id);
-          }
-        } catch (couponErr) {
-          console.error("Error processing coupon state:", couponErr);
+      if (!fetchErr && fetchOrders && fetchOrders.length > 0) {
+        orders = fetchOrders;
+      } else {
+        // Fallback to searching by orderId (notes.order_id)
+        const { data: fallbackOrder, error: fallbackErr } = await supabaseAdmin
+          .from('orders')
+          .select('*')
+          .eq('display_id', orderId);
+        if (!fallbackErr && fallbackOrder) {
+          orders = fallbackOrder;
         }
       }
 
-      // Trigger WhatsApp Notifications
+      if (!orders || orders.length === 0) {
+        console.error(`No orders found for payment link ${paymentLinkEntity.id} or display_id ${orderId}`);
+        return NextResponse.json({ error: "Order not found" }, { status: 404 });
+      }
+
       const host = req.headers.get('host') || 'localhost:3000';
       const protocol = host.includes('localhost') ? 'http' : 'https';
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `${protocol}://${host}`;
 
-      // Send to customer if opted-in
-      if (order.wa_opt_in && order.customer_mobile) {
-        fetch(`${siteUrl}/api/notify`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            orderDetails: { id: order.display_id, totalAmount: order.total_amount },
-            waNumber: order.customer_mobile,
-            customerName: order.customer_name
-          })
-        }).catch(err => console.error("Error triggering customer notification:", err));
-      }
+      for (const order of orders) {
+        // Prevent duplicate processing if already confirmed
+        if (order.status === 'confirmed') {
+          console.log(`Order ${order.display_id} is already confirmed. Skipping.`);
+          continue;
+        }
 
-      // Send to admin
-      if (process.env.ADMIN_PHONE) {
-        fetch(`${siteUrl}/api/notify`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            orderDetails: { id: order.display_id, totalAmount: order.total_amount },
-            waNumber: process.env.ADMIN_PHONE,
-            customerName: "Admin"
+        // Update Order Status and Payment Status
+        const { error: updateErr } = await supabaseAdmin
+          .from('orders')
+          .update({
+            status: 'confirmed',
+            payment_status: 'paid',
+            payment_id: razorpay_payment_id || null
           })
-        }).catch(err => console.error("Error triggering admin notification:", err));
+          .eq('id', order.id);
+
+        if (updateErr) {
+          console.error(`Failed to update order ${order.display_id} status:`, updateErr);
+          continue;
+        }
+
+        // Process Coupon Usage if coupon exists
+        if (order.coupon_id) {
+          try {
+            // Log coupon use
+            const { error: couponUseErr } = await supabaseAdmin
+              .from('coupon_uses')
+              .insert([{
+                coupon_id: order.coupon_id,
+                order_id: order.id, // UUID
+                user_phone: order.customer_mobile,
+                discount_applied: order.discount_amount || 0
+              }]);
+
+            if (couponUseErr) {
+              console.error("Failed to insert coupon use record:", couponUseErr);
+            }
+
+            // Increment coupon uses count
+            const { data: coupon } = await supabaseAdmin
+              .from('coupons')
+              .select('uses_count')
+              .eq('id', order.coupon_id)
+              .single();
+
+            if (coupon) {
+              await supabaseAdmin
+                .from('coupons')
+                .update({ uses_count: (coupon.uses_count || 0) + 1 })
+                .eq('id', order.coupon_id);
+            }
+          } catch (couponErr) {
+            console.error("Error processing coupon state:", couponErr);
+          }
+        }
+
+        // Trigger WhatsApp Notifications
+        // Send to customer if opted-in
+        if (order.wa_opt_in && order.customer_mobile) {
+          fetch(`${siteUrl}/api/notify`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              orderDetails: { id: order.display_id, totalAmount: order.total_amount },
+              waNumber: order.customer_mobile,
+              customerName: order.customer_name
+            })
+          }).catch(err => console.error("Error triggering customer notification:", err));
+        }
+
+        // Send to admin
+        if (process.env.ADMIN_PHONE) {
+          fetch(`${siteUrl}/api/notify`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              orderDetails: { id: order.display_id, totalAmount: order.total_amount },
+              waNumber: process.env.ADMIN_PHONE,
+              customerName: "Admin"
+            })
+          }).catch(err => console.error("Error triggering admin notification:", err));
+        }
       }
 
     } else if (event === 'payment_link.expired') {
-      console.log(`[RAZORPAY WEBHOOK] Processing expired payment link for order: ${orderId}`);
+      console.log(`[RAZORPAY WEBHOOK] Processing expired payment link: ${paymentLinkEntity.id}`);
 
       const { error: updateErr } = await supabaseAdmin
         .from('orders')
@@ -160,11 +175,18 @@ export async function POST(req: Request) {
           status: 'payment_failed',
           payment_status: 'failed'
         })
-        .eq('display_id', orderId);
+        .eq('payment_link_id', paymentLinkEntity.id);
 
       if (updateErr) {
-        console.error(`Failed to mark order ${orderId} as failed:`, updateErr);
-        return NextResponse.json({ error: "Failed to update order status" }, { status: 500 });
+        console.error(`Failed to mark orders for link ${paymentLinkEntity.id} as failed:`, updateErr);
+        // Fallback to display_id
+        await supabaseAdmin
+          .from('orders')
+          .update({
+            status: 'payment_failed',
+            payment_status: 'failed'
+          })
+          .eq('display_id', orderId);
       }
     }
 
