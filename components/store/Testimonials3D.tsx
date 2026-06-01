@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, MessageCircle } from "lucide-react";
 
 function InstagramIcon({ size = 12, className = "" }: { size?: number; className?: string }) {
@@ -194,6 +194,7 @@ export default function Testimonials3D() {
       stopAutoplay();
     }
     return () => stopAutoplay();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isHovered, activeIndex]);
 
   const handlePrev = () => {

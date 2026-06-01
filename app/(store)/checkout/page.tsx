@@ -213,6 +213,7 @@ export default function CheckoutPage() {
     if (appliedCoupon) {
       handleRemoveCoupon();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.mobile]);
 
   // Re-validate coupon if deliveryOption changes (recalculates min_order / flat cap discount)
@@ -247,6 +248,7 @@ export default function CheckoutPage() {
       };
       reapply();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deliveryOption]);
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
