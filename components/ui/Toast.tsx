@@ -23,11 +23,11 @@ export function Toast({ message, isVisible, onClose, duration = 3000 }: ToastPro
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ opacity: 0, y: 50, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 20, scale: 0.95 }}
+          initial={{ opacity: 0, x: "-50%", y: 50, scale: 0.95 }}
+          animate={{ opacity: 1, x: "-50%", y: 0, scale: 1 }}
+          exit={{ opacity: 0, x: "-50%", y: 20, scale: 0.95 }}
           transition={{ type: "spring", stiffness: 400, damping: 30 }}
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-3 bg-[#2C1A1D] text-white px-5 py-3.5 rounded-xl shadow-2xl border border-white/10 w-[90%] sm:w-auto max-w-sm"
+          className="fixed bottom-6 left-1/2 z-[200] flex items-center gap-3 bg-[#2C1A1D] text-white px-5 py-3.5 rounded-xl shadow-2xl border border-white/10 w-[90%] sm:w-auto max-w-sm"
         >
           <CheckCircle2 size={20} className="text-green-400 shrink-0" />
           <span className="text-sm font-medium">{message}</span>

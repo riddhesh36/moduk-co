@@ -79,8 +79,6 @@ export default function CheckoutPage() {
             name: lastOrder.customer_name || prev.name,
             mobile: lastOrder.customer_mobile || prev.mobile,
             email: lastOrder.customer_email || prev.email,
-            address: lastOrder.address_line1 || prev.address,
-            pincode: lastOrder.address_pincode || prev.pincode,
           }));
         }
       } catch (err) {
@@ -98,9 +96,14 @@ export default function CheckoutPage() {
   useEffect(() => {
     const clean = formData.pincode.trim();
     if (clean.length === 6) {
-      setZoneResult(checkDeliveryZone(clean));
+      const result = checkDeliveryZone(clean);
+      setZoneResult(result);
+      if (result.status !== "serviceable") {
+        setFormData(prev => ({ ...prev, address: "" }));
+      }
     } else {
       setZoneResult({ status: "unknown" });
+      setFormData(prev => ({ ...prev, address: "" }));
     }
   }, [formData.pincode]);
 
