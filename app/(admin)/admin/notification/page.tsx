@@ -5,7 +5,6 @@ import { Bell, Save, Eye, Loader2, CheckCircle, AlertCircle } from "lucide-react
 import {
   getNotificationBarSettings,
   updateNotificationBarSettings,
-  NotificationBarSettings,
 } from "./actions";
 
 const PRESET_COLORS = [
