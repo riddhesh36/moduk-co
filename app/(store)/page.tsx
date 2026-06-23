@@ -38,11 +38,6 @@ export default async function Home() {
 
   return (
     <div className="w-full">
-      {/* DELIVERY NUDGE */}
-      <div className="w-full bg-rose text-white text-center py-2 px-4 text-xs tracking-wide uppercase font-semibold">
-        🎉 New Website Launch Offer! Get 10% OFF your first order with code NEW10.
-      </div>
-
       {/* BENTO HERO — includes How It Works + Brand Story */}
       <HeroSection />
 

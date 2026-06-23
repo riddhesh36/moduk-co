@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { Package, Banknote, ShoppingBag, MapPin } from "lucide-react";
 import OrderActionButtons from "@/components/admin/OrderActionButtons";
+import { getISTDateString } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,7 @@ export default async function AdminOrderInbox() {
     }
   );
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = getISTDateString();
 
   const { data: allOrders } = await supabase
     .from('orders')
@@ -73,9 +74,12 @@ export default async function AdminOrderInbox() {
           <h1 className="text-3xl font-playfair font-bold text-[#2C1A1D]">Order Management</h1>
           <p className="text-[#777777] mt-1">Real-time overview of your incoming orders and daily targets.</p>
         </div>
-        <button className="bg-[#C4617A] text-white px-5 py-2 rounded-lg font-semibold shadow-sm hover:bg-[#C4617A]/90 self-start sm:self-auto">
+        <a 
+          href="/admin/export-csv"
+          className="bg-[#C4617A] text-white px-5 py-2 rounded-lg font-semibold shadow-sm hover:bg-[#C4617A]/90 self-start sm:self-auto inline-block text-center"
+        >
           Export CSV
-        </button>
+        </a>
       </div>
 
       {/* KPI Cards */}

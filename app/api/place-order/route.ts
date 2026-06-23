@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { getISTDateString } from "@/lib/utils";
 
 export async function POST(req: Request) {
   try {
@@ -13,9 +14,9 @@ export async function POST(req: Request) {
     
     let slotDate = selectedDate;
     if (selectedDate === 'today') {
-      slotDate = new Date().toISOString().split('T')[0];
+      slotDate = getISTDateString();
     } else if (selectedDate === 'tomorrow') {
-      slotDate = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+      slotDate = getISTDateString(new Date(Date.now() + 86400000));
     }
 
     // Calculate totals

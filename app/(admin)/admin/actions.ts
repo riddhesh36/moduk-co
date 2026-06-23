@@ -99,7 +99,7 @@ export async function updateOrderStatus(orderId: string, newStatus: string) {
 }
 
 export async function deleteOrder(orderId: string) {
-  const supabase = getSupabase();
+  const supabase = supabaseAdmin;
 
   const { error } = await supabase
     .from('orders')

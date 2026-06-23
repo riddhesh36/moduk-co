@@ -4,12 +4,13 @@ import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { razorpay } from '@/lib/razorpay';
 import { MOCK_PRODUCTS } from '@/lib/constants';
 import { checkDeliveryZone } from '@/lib/deliveryZones';
+import { getISTDateString } from '@/lib/utils';
 
 function parseSlotDate(dateStr: string) {
   if (!dateStr || dateStr === 'today') {
-    return new Date().toISOString().split('T')[0];
+    return getISTDateString();
   } else if (dateStr === 'tomorrow') {
-    return new Date(Date.now() + 86400000).toISOString().split('T')[0];
+    return getISTDateString(new Date(Date.now() + 86400000));
   }
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
     return dateStr;
@@ -17,10 +18,10 @@ function parseSlotDate(dateStr: string) {
   try {
     const d = new Date(dateStr);
     if (!isNaN(d.getTime())) {
-      return d.toISOString().split('T')[0];
+      return getISTDateString(d);
     }
   } catch {}
-  return new Date().toISOString().split('T')[0];
+  return getISTDateString();
 }
 
 export async function POST(req: Request) {

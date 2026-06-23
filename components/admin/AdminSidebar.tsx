@@ -11,7 +11,8 @@ import {
   LayoutDashboard,
   LogOut,
   X,
-  Ticket
+  Ticket,
+  Bell
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +22,7 @@ const menuItems = [
   { name: "Products", href: "/admin/products", icon: Package },
   { name: "Delivery Slots", href: "/admin/slots", icon: Calendar },
   { name: "Coupons", href: "/admin/coupons", icon: Ticket },
+  { name: "Notification Bar", href: "/admin/notification", icon: Bell },
 ];
 
 interface AdminSidebarProps {
