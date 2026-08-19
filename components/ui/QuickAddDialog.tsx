@@ -85,7 +85,7 @@ export function QuickAddDialog({
             className="fixed left-1/2 top-1/2 z-[101] w-full max-w-lg p-4 outline-none"
           >
             <div className="bg-cream rounded-2xl shadow-xl overflow-hidden border border-rose/10 flex flex-col max-h-[90vh]">
-              <div className="p-6 relative overflow-y-auto">
+              <div data-lenis-prevent className="p-6 relative overflow-y-auto">
                 <button 
                   onClick={onClose}
                   className="absolute top-4 right-4 text-text-muted hover:text-dark transition-colors"

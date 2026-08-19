@@ -4,6 +4,7 @@ import { CartProvider } from "@/components/cart/CartContext";
 import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
 import { DeliveryAdvisoryModal } from "@/components/ui/DeliveryAdvisoryModal";
 import { AnnouncementBar } from "@/components/layout/AnnouncementBar";
+import SmoothScroll from "@/components/providers/SmoothScroll";
 
 export default function StoreLayout({
   children,
@@ -12,6 +13,7 @@ export default function StoreLayout({
 }) {
   return (
     <CartProvider>
+      <SmoothScroll />
       <AnnouncementBar />
       <Navbar />
       <main className="flex-1 flex flex-col w-full h-full relative">

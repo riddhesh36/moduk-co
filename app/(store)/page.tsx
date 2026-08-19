@@ -5,6 +5,11 @@ import { cookies } from "next/headers";
 import { MOCK_PRODUCTS } from "@/lib/constants";
 import HomeProducts from "@/components/store/HomeProducts";
 import HeroSection from "@/components/store/HeroSection";
+import SectionHeading from "@/components/store/SectionHeading";
+import HowItWorksSection from "@/components/store/HowItWorksSection";
+import WhyModukSection from "@/components/store/WhyModukSection";
+import PromiseSection from "@/components/store/PromiseSection";
+import ClosingCTA from "@/components/store/ClosingCTA";
 import Testimonials3D from "@/components/store/Testimonials3D";
 
 export const dynamic = "force-dynamic";
@@ -38,29 +43,45 @@ export default async function Home() {
 
   return (
     <div className="w-full">
-      {/* BENTO HERO — includes How It Works + Brand Story */}
+      {/* 1 — SCROLL STORY HERO (frame sequence) */}
       <HeroSection />
 
-      {/* FEATURED PRODUCTS */}
-      <section className="py-20 md:py-28 px-6 bg-cream">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-playfair font-bold text-dark">Our Signature Modaks</h2>
-            <p className="mt-4 text-text-muted">Freshly steamed today, delivered to you in hours.</p>
-          </div>
+      {/* 2 — FEATURED PRODUCTS */}
+      <section className="bg-cream px-6 py-20 md:py-28">
+        <div className="mx-auto max-w-7xl">
+          <SectionHeading
+            eyebrow="The boxes"
+            title="Our signature"
+            accent="modaks."
+            body="Steamed this morning, boxed while warm, and on their way to you within hours."
+          />
 
-          <HomeProducts products={displayProducts} slots={slots || []} />
+          <div className="mt-16">
+            <HomeProducts products={displayProducts} slots={slots || []} />
+          </div>
 
           <div className="mt-16 text-center">
             <Link href="/shop" passHref>
-              <Button variant="secondary" size="lg">View All Products</Button>
+              <Button variant="secondary" size="lg">View all products</Button>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* TESTIMONIALS */}
+      {/* 3 — HOW IT WORKS */}
+      <HowItWorksSection />
+
+      {/* 4 — WHY MODUK & CO */}
+      <WhyModukSection />
+
+      {/* 5 — BRAND STORY / PROMISE */}
+      <PromiseSection />
+
+      {/* 6 — TESTIMONIALS */}
       <Testimonials3D />
+
+      {/* 7 — CLOSING CTA */}
+      <ClosingCTA />
     </div>
   );
 }

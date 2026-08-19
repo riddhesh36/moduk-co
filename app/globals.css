@@ -124,3 +124,133 @@
   font-family: var(--font-eb-garamond), serif !important;
 }
 
+
+/* ── Lenis smooth scroll ──────────────────────────────── */
+
+html.lenis, html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* ── Scroll story hero ────────────────────────────────── *
+ * The frame sequence is a warm greige studio render. Every colour below is
+ * sampled from the frames themselves so the page background and the video
+ * background read as one continuous surface — that is what lets the canvas be
+ * dissolved away on the left without leaving a visible seam.
+ */
+
+:root {
+  --story-bg-high: #DAD4CC;   /* frame top edge   */
+  --story-bg-mid:  #CBC5BB;   /* frame mid        */
+  --story-bg-low:  #B4AC9D;   /* frame lower band */
+  --story-bg-deep: #A79D8B;   /* frame bottom corners */
+  --story-chapter-vh: 78vh;   /* scroll distance allotted to each chapter */
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --story-chapter-vh: 92vh;
+  }
+}
+
+.story-stage-bg {
+  background:
+    radial-gradient(115% 88% at 52% 4%,
+      var(--story-bg-high) 0%,
+      var(--story-bg-mid) 38%,
+      var(--story-bg-low) 70%,
+      var(--story-bg-deep) 100%);
+}
+
+/* Below `lg` the sequence is full-bleed with the copy anchored at the bottom,
+   so the feather runs downwards and hands off to the stage gradient there. */
+.story-canvas {
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 54%, rgba(0, 0, 0, 0.32) 80%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 54%, rgba(0, 0, 0, 0.32) 80%, transparent 100%);
+}
+
+/* On desktop the canvas is its own right-hand column, so the feather only has
+   to dissolve its left edge — and that edge is pure studio backdrop, which the
+   stage gradient already matches. The subject never enters the fade. */
+@media (min-width: 1024px) {
+  .story-canvas {
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.4) 6%, #000 14%);
+    mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.4) 6%, #000 14%);
+  }
+}
+
+/* Softens the busiest part of the render behind the copy, in the frames' own
+   colour, so the type keeps its contrast without a grey box appearing. */
+.story-scrim {
+  background:
+    linear-gradient(to bottom, rgba(218, 212, 204, 0.55) 0%, rgba(218, 212, 204, 0) 32%),
+    linear-gradient(to top, rgba(167, 157, 139, 0.62) 0%, rgba(167, 157, 139, 0) 46%);
+  pointer-events: none;
+}
+
+@media (min-width: 1024px) {
+  /* No horizontal wash needed here — the copy column sits clear of the canvas,
+     so only the top and bottom edges get the usual softening. */
+  .story-scrim {
+    background:
+      linear-gradient(to bottom, rgba(218, 212, 204, 0.42) 0%, rgba(218, 212, 204, 0) 24%),
+      linear-gradient(to top, rgba(167, 157, 139, 0.34) 0%, rgba(167, 157, 139, 0) 26%);
+  }
+}
+
+/* A whisper of grain over the whole stage. Studio renders are perfectly clean,
+   which is exactly what makes a banded gradient behind them obvious. */
+.story-grain {
+  pointer-events: none;
+  opacity: 0.045;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Chapter rail */
+.story-rail-mark {
+  display: block;
+  width: 11px;
+  height: 11px;
+  border-radius: 9999px;
+  border: 1px solid rgba(44, 26, 29, 0.28);
+  background: transparent;
+  transition: background-color 0.4s ease, border-color 0.4s ease, transform 0.4s ease;
+}
+.story-rail-dot[data-active="true"] .story-rail-mark {
+  background: #C4617A;
+  border-color: #C4617A;
+  transform: scale(1.15);
+}
+.story-rail-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: rgba(44, 26, 29, 0.35);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.35s ease, transform 0.35s ease, color 0.35s ease;
+}
+.story-rail-dot:hover .story-rail-label,
+.story-rail-dot[data-active="true"] .story-rail-label {
+  opacity: 1;
+  transform: translateX(0);
+}
+.story-rail-dot[data-active="true"] .story-rail-label {
+  color: rgba(44, 26, 29, 0.7);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story-rail-mark,
+  .story-rail-label {
+    transition: none;
+  }
+}

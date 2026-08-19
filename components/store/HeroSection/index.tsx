@@ -1,1 +1,1 @@
-export { default } from "../HeroSection.bento";
+export { default } from "../ScrollStoryHero";
