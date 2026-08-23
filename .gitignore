@@ -34,3 +34,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Raw frame exports (source material — transcoded into public/animation-frames)
+_source-frames/

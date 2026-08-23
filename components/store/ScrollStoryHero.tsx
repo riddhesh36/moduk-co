@@ -2,22 +2,23 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ChevronRight, ArrowDown } from "lucide-react";
+import NextImage from "next/image";
+import { ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 /* ═══════════════════════════════════════════════════════════
    Frame sequence
    ═══════════════════════════════════════════════════════════ */
 
-const TOTAL_FRAMES = 200;
+const TOTAL_FRAMES = 115;
 
 const frameSrc = (n: number) =>
-  `/animation-frames/ezgif-frame-${String(n).padStart(3, "0")}.jpg`;
+  `/animation-frames/frame-${String(n).padStart(3, "0")}.jpg`;
 
 /**
- * Full sequence on desktop; every 3rd frame on phones. 200 decoded 1920×1080
- * bitmaps is well past what a mid-range phone will hold, and at phone scroll
- * lengths the thinned sequence is indistinguishable.
+ * Full sequence on desktop; every 2nd frame on phones. 115 decoded 720×1120
+ * bitmaps is more than a mid-range phone wants to hold at once, and at phone
+ * scroll lengths the thinned sequence is indistinguishable.
  */
 function buildFrameList(stride: number): number[] {
   const out: number[] = [];
@@ -32,7 +33,6 @@ function buildFrameList(stride: number): number[] {
 
 type Chapter = {
   id: string;
-  step: string;
   eyebrow: string;
   title: string;
   accent?: string;
@@ -42,75 +42,63 @@ type Chapter = {
   from: number;
   to: number;
   cta?: "primary" | "closing";
+  /** The sequence ends on an empty backdrop; this chapter hands the stage to
+      the wordmark instead of running another block of copy. */
+  outro?: boolean;
 };
 
 const CHAPTERS: Chapter[] = [
   {
     id: "joy",
-    step: "",
     eyebrow: "Moduk & Co · Mumbai",
     title: "Pure joy,",
     accent: "made by hand.",
     body: "Ukadiche modaks steamed fresh every morning and delivered warm to your door — the way they were always meant to arrive.",
     from: 1,
-    to: 32,
+    to: 28,
     cta: "primary",
   },
   {
-    id: "rice",
-    step: "01",
-    eyebrow: "The dough",
-    title: "It begins",
-    accent: "with rice.",
-    body: "Fine rice flour, scalded and kneaded while still hot, then pressed out by hand into shells thin enough to see light through.",
+    id: "offering",
+    eyebrow: "The offering",
+    title: "Made first",
+    accent: "for Bappa.",
+    body: "The ukadiche modak is what Ganpati is offered before anyone else eats. We make it the way that tradition asks for — and no faster.",
     chips: ["Rice flour", "No moulds"],
-    from: 33,
+    from: 29,
     to: 58,
   },
   {
-    id: "coconut",
-    step: "02",
+    id: "filling",
     eyebrow: "The filling",
-    title: "Coconut,",
-    accent: "grated that morning.",
-    body: "Whole coconuts cracked and grated the same day they're used. Never desiccated, never out of a packet.",
-    chips: ["Fresh coconut", "Same-day"],
+    title: "Coconut and jaggery,",
+    accent: "nothing else.",
+    body: "Whole coconuts grated the same morning, folded through slow-melted jaggery with cardamom and a thread of saffron. No sugar, no preservatives.",
+    chips: ["Fresh coconut", "Jaggery, no sugar", "Saffron"],
     from: 59,
-    to: 86,
-  },
-  {
-    id: "jaggery",
-    step: "03",
-    eyebrow: "The sweetness",
-    title: "Golden jaggery.",
-    accent: "No sugar.",
-    body: "Slow-melted jaggery folded through the coconut with cardamom and a thread of saffron, cooked down until it holds together on its own.",
-    chips: ["Jaggery", "Cardamom", "Saffron"],
-    from: 87,
-    to: 118,
-  },
-  {
-    id: "pleat",
-    step: "04",
-    eyebrow: "The fold",
-    title: "Pleated and sealed",
-    accent: "by thumb.",
-    body: "Every shell is gathered into petals and drawn up to a single peak. It's the part that takes years to learn, and the part we refuse to shortcut.",
-    chips: ["Hand-pleated", "No preservatives"],
-    from: 119,
-    to: 158,
+    to: 84,
   },
   {
     id: "steam",
-    step: "05",
     eyebrow: "The finish",
-    title: "Steamed, then",
-    accent: "straight to you.",
-    body: "Minutes over steam, boxed while still warm, and hand-delivered across Mumbai and Navi Mumbai in the slot you pick.",
-    chips: ["Steamed, never fried", "Delivered warm"],
-    from: 159,
-    to: 200,
+    title: "Pleated by thumb,",
+    accent: "steamed, never fried.",
+    body: "Every shell is gathered into petals and drawn up to a single peak, then given minutes over steam and boxed while it is still warm.",
+    chips: ["Hand-pleated", "Steamed"],
+    from: 85,
+    to: 104,
+  },
+  {
+    id: "delivery",
+    eyebrow: "The delivery",
+    title: "Home in time",
+    accent: "for the aarti.",
+    body: "Hand-delivered warm across Mumbai and Navi Mumbai, in the slot you pick.",
+    chips: ["Same-day slots", "Delivered warm"],
+    from: 105,
+    to: 115,
     cta: "closing",
+    outro: true,
   },
 ];
 
@@ -146,8 +134,9 @@ export default function ScrollStoryHero() {
   const panelRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const chapterRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const railRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const railFillRef = useRef<HTMLDivElement>(null);
+  const mediaRef = useRef<HTMLDivElement>(null);
+  const outroRef = useRef<HTMLDivElement>(null);
+  const outroArtRef = useRef<HTMLDivElement>(null);
 
   const [mode, setMode] = useState<Mode>("booting");
   const [progressPct, setProgressPct] = useState(0);
@@ -158,10 +147,20 @@ export default function ScrollStoryHero() {
   const imagesRef = useRef<(HTMLImageElement | null)[]>([]);
   const currentIndexRef = useRef(0);
   const drawnIndexRef = useRef(-1);
-  /** shiftX/shiftY are fractions of the canvas box: +x slides the subject right,
-      -y lifts it. `zoom` oversamples so there is room to slide without exposing
-      an edge of the frame. */
-  const layoutRef = useRef({ zoom: 1.02, shiftX: 0, shiftY: 0, dpr: 1 });
+  /** Scratch canvas holding the averaged backdrop edge (see paint). */
+  const edgeRef = useRef<HTMLCanvasElement | null>(null);
+  /** `fit` is cover on phones (the frame owns the whole stage) and contain on
+      desktop, where the column is far shorter than the frame is tall — contain
+      shows the subject whole and lets the stage gradient, which is the same
+      backdrop, fill what is left over. shiftX/shiftY are fractions of the
+      canvas box and only apply under cover. */
+  const layoutRef = useRef<{
+    fit: "cover" | "contain";
+    zoom: number;
+    shiftX: number;
+    shiftY: number;
+    dpr: number;
+  }>({ fit: "cover", zoom: 1.01, shiftX: 0, shiftY: 0, dpr: 1 });
 
   /* ── Draw one frame, cover-fit, subject biased to the right ── */
   const paint = useCallback((listIndex: number, force = false) => {
@@ -185,21 +184,67 @@ export default function ScrollStoryHero() {
     const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx || !img.naturalWidth) return;
 
-    const { zoom, shiftX, shiftY, dpr } = layoutRef.current;
+    // The source is 1280×720 and the desktop column asks for roughly twice that,
+    // so the resampler is doing real work on every frame — the browser default
+    // ("low") is what makes an upscaled sequence read as soft.
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+
+    const { fit, zoom, shiftX, shiftY, dpr } = layoutRef.current;
     const cw = canvas.width / dpr;
     const ch = canvas.height / dpr;
 
-    const scale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight) * zoom;
+    const contain = fit === "contain";
+    const ratio = contain
+      ? Math.min(cw / img.naturalWidth, ch / img.naturalHeight)
+      : Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
+    const scale = ratio * zoom;
     const dw = img.naturalWidth * scale;
     const dh = img.naturalHeight * scale;
 
-    // Centre first, then slide; clamp so we never expose an edge of the frame.
-    const dx = Math.min(0, Math.max(cw - dw, (cw - dw) / 2 + shiftX * cw));
-    const dy = Math.min(0, Math.max(ch - dh, (ch - dh) / 2 + shiftY * ch));
+    // Contain: flush to the column's left edge, centred vertically — the gap it
+    // leaves is stage gradient, which is this frame's own backdrop.
+    // Cover: centre, then slide, clamped so no edge of the frame is exposed.
+    const dx = contain
+      ? 0
+      : Math.min(0, Math.max(cw - dw, (cw - dw) / 2 + shiftX * cw));
+    const dy = contain
+      ? (ch - dh) / 2
+      : Math.min(0, Math.max(ch - dh, (ch - dh) / 2 + shiftY * ch));
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, cw, ch);
     ctx.drawImage(img, dx, dy, dw, dh);
+
+    // Continue the backdrop past the frame by stretching its own right-hand
+    // edge across the rest of the canvas. The subject never reaches that
+    // column, so this is pure cloth — and because it is the frame's actual
+    // pixels, the hand-off to the stage gradient has no colour step in it.
+    // A gradient alone could never match: the backdrop is lit in two
+    // dimensions and a CSS gradient only varies in one.
+    // Only the last two columns: the trunk comes within ~10px of the right edge
+    // at the midpoint of the sequence, and those two stay pure cloth in every
+    // frame. They are averaged down into a 1×96 strip first — stretching raw
+    // JPEG pixels several hundred px wide turns their per-row noise into
+    // visible horizontal streaks; resampling them small kills that.
+    const gap = cw - (dx + dw);
+    if (gap > 0.5) {
+      let edge = edgeRef.current;
+      if (!edge) {
+        edge = document.createElement("canvas");
+        edge.width = 1;
+        edge.height = 96;
+        edgeRef.current = edge;
+      }
+      const ectx = edge.getContext("2d");
+      if (ectx) {
+        ectx.imageSmoothingEnabled = true;
+        ectx.imageSmoothingQuality = "high";
+        ectx.clearRect(0, 0, 1, 96);
+        ectx.drawImage(img, img.naturalWidth - 2, 0, 2, img.naturalHeight, 0, 0, 1, 96);
+        ctx.drawImage(edge, 0, 0, 1, 96, dx + dw - 1, dy, gap + 1, dh);
+      }
+    }
 
     drawnIndexRef.current = found;
   }, []);
@@ -214,14 +259,13 @@ export default function ScrollStoryHero() {
     const desktop = window.innerWidth >= 1024;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-    // The modak is centred in a 16:9 frame, so it can't be shoved sideways by
-    // cropping without also being blown up. Desktop instead hands the canvas its
-    // own right-hand column and draws cover-fit inside it — the subject lands
-    // right of the copy at its natural size. Phones keep the frame full-bleed
-    // and lift the subject above the copy.
+    // Phones give the portrait frame a portrait screen, so cover-fit wastes
+    // almost nothing. The desktop column is far shorter than the frame is tall,
+    // and cover there cut the modak off at the knees — contain shows it whole
+    // and hands the leftover space back to the stage gradient.
     layoutRef.current = desktop
-      ? { zoom: 1.02, shiftX: 0, shiftY: 0, dpr }
-      : { zoom: 1.3, shiftX: 0, shiftY: -0.13, dpr };
+      ? { fit: "contain", zoom: 1, shiftX: 0, shiftY: 0, dpr }
+      : { fit: "cover", zoom: 1.01, shiftX: 0, shiftY: 0, dpr };
 
     canvas.width = Math.round(rect.width * dpr);
     canvas.height = Math.round(rect.height * dpr);
@@ -235,7 +279,7 @@ export default function ScrollStoryHero() {
       return;
     }
 
-    const stride = window.innerWidth < 768 ? 3 : 1;
+    const stride = window.innerWidth < 768 ? 2 : 1;
     const frames = buildFrameList(stride);
     framesRef.current = frames;
     imagesRef.current = new Array(frames.length).fill(null);
@@ -248,19 +292,33 @@ export default function ScrollStoryHero() {
     // early scroll still lands on something close to the right frame.
     const order: number[] = [];
     const taken = new Set<number>();
-    for (const step of [8, 4, 2, 1]) {
+    const pass = (step: number) => {
       for (let i = 0; i < frames.length; i += step) {
         if (!taken.has(i)) { taken.add(i); order.push(i); }
       }
-    }
+    };
+    pass(8);
+    pass(4);
+    // The first two passes are enough to light the stage and scrub roughly.
+    // Everything after them is ~6 MB of in-between frames, so it waits for the
+    // page's load event rather than racing the fonts, the product photography
+    // and the first paint for bandwidth. A fast scroll into a not-yet-loaded
+    // gap still paints — `paint` walks outward to the nearest decoded frame.
+    const eagerCount = order.length;
+    pass(2);
+    pass(1);
 
     const coarseCount = Math.ceil(frames.length / 8);
     let coarseDone = 0;
     let cursor = 0;
     const CONCURRENCY = 6;
 
+    let tailOpen = false;
+
     const pump = () => {
       while (cursor < order.length) {
+        // Hold at the wave boundary until the page has finished loading.
+        if (cursor >= eagerCount && !tailOpen) return;
         const slot = order[cursor++];
         const img = new Image();
         img.decoding = "async";
@@ -298,12 +356,27 @@ export default function ScrollStoryHero() {
     };
     for (let i = 0; i < CONCURRENCY; i++) { inFlight++; pump(); }
 
+    // Release the in-between frames once the page has loaded — or after three
+    // seconds, so a page that never fires `load` (a stalled third-party script,
+    // say) still ends up with a complete sequence.
+    const openTail = () => {
+      if (tailOpen || cancelled) return;
+      tailOpen = true;
+      inFlight = 0;
+      for (let i = 0; i < CONCURRENCY; i++) { inFlight++; pump(); }
+    };
+    const tailTimer = window.setTimeout(openTail, 3000);
+    if (document.readyState === "complete") openTail();
+    else window.addEventListener("load", openTail, { once: true });
+
     // Safety net: if the network stalls, show the stage anyway.
     const failsafe = window.setTimeout(() => !cancelled && setMode("sequence"), 4000);
 
     return () => {
       cancelled = true;
       window.clearTimeout(failsafe);
+      window.clearTimeout(tailTimer);
+      window.removeEventListener("load", openTail);
       imagesRef.current.forEach((img) => { if (img) { img.onload = null; img.onerror = null; } });
     };
   }, [paint]);
@@ -358,33 +431,56 @@ export default function ScrollStoryHero() {
       currentIndexRef.current = slot;
       paint(slot);
 
-      /* Copy: fade each chapter in early, hold, fade out at the seam */
+      /* Copy: the chapter rises in from below, holds, then lifts away as the
+         next one takes over. The wrapper only publishes two numbers — how far
+         in it is (--p) and how far off its resting line (--y); the per-line
+         stagger that makes it read as a sentence assembling is CSS. */
       for (let i = 0; i < n; i++) {
         const el = chapterRefs.current[i];
         if (!el) continue;
-        let opacity = 0;
-        let y = 24;
+        let p = 0;
+        let y = 52;
 
         if (i === index) {
-          const enter = i === 0 ? 1 : range(local, 0.04, 0.24);
-          const exit = 1 - range(local, 0.82, 0.97);
-          opacity = enter * exit;
-          y = (1 - enter) * 26 - (1 - exit) * 18;
+          const enter = i === 0 ? 1 : range(local, 0.03, 0.30);
+          const exit = 1 - range(local, 0.78, 0.96);
+          p = enter * exit;
+          y = (1 - enter) * 52 - (1 - exit) * 46;
         }
 
-        el.style.opacity = opacity.toFixed(3);
-        el.style.transform = `translate3d(0, ${y.toFixed(2)}px, 0)`;
-        el.style.visibility = opacity < 0.01 ? "hidden" : "visible";
-        el.style.pointerEvents = opacity > 0.6 ? "auto" : "none";
+        el.style.setProperty("--p", p.toFixed(3));
+        el.style.setProperty("--y", `${y.toFixed(2)}px`);
+        el.style.visibility = p < 0.01 ? "hidden" : "visible";
+        el.style.pointerEvents = p > 0.6 ? "auto" : "none";
       }
 
-      /* Rail */
-      if (railFillRef.current) {
-        railFillRef.current.style.transform = `scaleY(${(index + local) / n})`;
+      /* Outro. The sequence ends on an empty backdrop, so the last chapter
+         hands over in three overlapping beats rather than all at once: the
+         canvas dissolves, the gift box settles into the space it leaves, and
+         the wordmark comes up beside it. All three are scroll-driven, so
+         scrubbing backwards runs the hand-over in reverse. */
+      const last = index === n - 1;
+      const frameOut = last ? easeInOutSine(range(local, 0.12, 0.40)) : 0;
+      const artIn = last ? easeInOutSine(range(local, 0.28, 0.60)) : 0;
+      const wordIn = last ? easeInOutSine(range(local, 0.38, 0.72)) : 0;
+
+      if (mediaRef.current) {
+        mediaRef.current.style.opacity = (1 - frameOut).toFixed(3);
       }
+      if (outroArtRef.current) {
+        outroArtRef.current.style.setProperty("--p", artIn.toFixed(3));
+        outroArtRef.current.style.setProperty("--y", `${((1 - artIn) * 56).toFixed(2)}px`);
+        outroArtRef.current.style.visibility = artIn < 0.01 ? "hidden" : "visible";
+      }
+      if (outroRef.current) {
+        outroRef.current.style.setProperty("--p", wordIn.toFixed(3));
+        outroRef.current.style.setProperty("--y", `${((1 - wordIn) * 44).toFixed(2)}px`);
+        outroRef.current.style.visibility = wordIn < 0.01 ? "hidden" : "visible";
+        outroRef.current.style.pointerEvents = wordIn > 0.6 ? "auto" : "none";
+      }
+
       if (index !== lastActive) {
         lastActive = index;
-        railRefs.current.forEach((b, i) => b?.setAttribute("data-active", String(i === index)));
         setActiveChapter(index);
       }
 
@@ -398,19 +494,6 @@ export default function ScrollStoryHero() {
     };
   }, [mode, paint, resize]);
 
-  /* ── Rail navigation ────────────────────────────────────── */
-  const goToChapter = useCallback((i: number) => {
-    const section = sectionRef.current;
-    const panel = panelRef.current;
-    if (!section || !panel) return;
-    const travel = section.offsetHeight - panel.offsetHeight;
-    const start = window.scrollY + section.getBoundingClientRect().top - STICKY_TOP;
-    const top = start + ((i + 0.42) / CHAPTERS.length) * travel;
-    const lenis = (window as unknown as { lenis?: { scrollTo: (t: number, o?: object) => void } }).lenis;
-    if (lenis) lenis.scrollTo(top, { duration: 1.1 });
-    else window.scrollTo({ top, behavior: "smooth" });
-  }, []);
-
   /* ═══════════════════════════════════════════════════════
      Reduced-motion / no-JS-sequence fallback: the same story,
      told as a plain stack of sections.
@@ -423,9 +506,9 @@ export default function ScrollStoryHero() {
             <StaticCopy chapter={CHAPTERS[0]} />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={frameSrc(200)}
+              src={frameSrc(1)}
               alt="A freshly steamed ukadiche modak"
-              className="w-full rounded-3xl"
+              className="mx-auto w-full max-w-sm rounded-3xl"
               loading="eager"
             />
           </div>
@@ -448,87 +531,94 @@ export default function ScrollStoryHero() {
       style={{ height: `calc(${CHAPTERS.length} * var(--story-chapter-vh))` }}
     >
       {/* ── Pinned stage ─────────────────────────────────── */}
-      <div ref={panelRef} className="sticky top-16 h-[calc(100svh-4rem)] w-full overflow-hidden">
-        {/* Frame sequence. Anchored to the same max-w-7xl container as the copy
-            and then bled out to the right viewport edge, so the gap between the
-            two columns holds at any width instead of collapsing on wide screens.
-            Its left edge is feathered away in CSS into a stage gradient sampled
-            from the frames themselves — hence no visible seam. */}
-        <div className="absolute inset-0 mx-auto max-w-7xl">
-          <canvas
-            ref={canvasRef}
-            aria-hidden="true"
-            className="story-canvas absolute inset-0 h-full w-full lg:left-[34%] lg:w-auto lg:right-[calc((100%_-_100vw)/2)]"
-          />
+      <div ref={panelRef} className="story-stage-panel sticky top-16 h-[calc(100svh-4rem)] w-full overflow-hidden">
+        {/* Frame sequence. The footage is a portrait studio shot on a brown
+            backdrop, and the stage behind it is a gradient sampled from that
+            same backdrop — so the frame has no visible edge. It takes a
+            left-hand column on desktop and the whole stage on phones. */}
+        <div ref={mediaRef} className="story-media">
+          <canvas ref={canvasRef} aria-hidden="true" className="h-full w-full" />
+          <div className="story-media-veil" aria-hidden="true" />
 
-          {/* Loading shade — covers only the sequence, so the headline is
-              readable from the first paint. */}
+          {/* Loading shade — the backdrop's own darkest tone, so the boot
+              state is just an unlit stage rather than a grey box. */}
           <div
-            className="story-canvas pointer-events-none absolute inset-0 flex items-center justify-center bg-[#CBC5BB] transition-opacity duration-700 lg:left-[34%] lg:right-[calc((100%_-_100vw)/2)]"
+            className="pointer-events-none absolute inset-0 flex items-center justify-center bg-[#2C1E13] transition-opacity duration-700"
             style={{ opacity: mode === "booting" ? 1 : 0 }}
             aria-hidden={mode !== "booting"}
           >
-            <span className="font-playfair text-sm tracking-[0.3em] text-dark/40">
+            <span className="font-playfair text-sm tracking-[0.3em] text-cream/40">
               {progressPct}%
             </span>
           </div>
         </div>
 
-        {/* Readability scrim, tinted with the sequence's own background colour */}
-        <div className="story-scrim absolute inset-0" aria-hidden="true" />
         <div className="story-grain absolute inset-0" aria-hidden="true" />
 
         {/* ── Chapter copy ──────────────────────────────── */}
-        <div className="relative mx-auto flex h-full max-w-7xl items-end px-6 pb-16 lg:items-center lg:px-10 lg:pb-0">
-          {/* Chapter rail */}
-          <div className="absolute left-10 top-1/2 hidden -translate-y-1/2 lg:block">
-            <div className="relative flex flex-col gap-5 pl-1">
-              <div className="absolute left-[5px] top-1 bottom-1 w-px bg-dark/15" aria-hidden="true" />
-              <div
-                ref={railFillRef}
-                className="absolute left-[5px] top-1 bottom-1 w-px origin-top bg-dark/55"
-                style={{ transform: "scaleY(0)" }}
-                aria-hidden="true"
-              />
-              {CHAPTERS.map((c, i) => (
-                <button
-                  key={c.id}
-                  ref={(el) => { railRefs.current[i] = el; }}
-                  type="button"
-                  onClick={() => goToChapter(i)}
-                  data-active={i === activeChapter}
-                  aria-current={i === activeChapter ? "step" : undefined}
-                  className="story-rail-dot group relative flex items-center gap-3"
-                >
-                  <span className="story-rail-mark" />
-                  <span className="story-rail-label">{c.step || "00"}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
+        <div className="relative mx-auto flex h-full max-w-7xl items-end px-6 pb-20 lg:items-center lg:px-10 lg:pb-0">
           {/* Stacked chapters — every one occupies the same grid cell, so the
               column is always as tall as the longest chapter and nothing jumps. */}
-          <div className="grid w-full lg:ml-14 lg:w-[34%] lg:max-w-md">
+          <div className="grid w-full lg:ml-auto lg:w-[44%] lg:max-w-lg">
             {CHAPTERS.map((c, i) => (
               <div
                 key={c.id}
                 ref={(el) => { chapterRefs.current[i] = el; }}
-                className="col-start-1 row-start-1 will-change-[opacity,transform]"
-                style={{ opacity: i === 0 ? 1 : 0, visibility: i === 0 ? "visible" : "hidden" }}
+                className="story-chapter col-start-1 row-start-1"
+                style={
+                  {
+                    "--p": i === 0 ? 1 : 0,
+                    "--y": "0px",
+                    visibility: i === 0 ? "visible" : "hidden",
+                  } as React.CSSProperties
+                }
               >
-                <ChapterBody chapter={c} lead={i === 0} />
+                {c.outro ? null : <ChapterBody chapter={c} lead={i === 0} />}
               </div>
             ))}
           </div>
 
-          {/* Scroll cue — sits under the copy, and only in the opening chapter */}
+          {/* The box that arrives once the frame has emptied — it lands in the
+              column the sequence just vacated, so the stage never goes bare. */}
           <div
-            className="pointer-events-none absolute bottom-8 left-10 hidden items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-dark/45 transition-opacity duration-500 lg:flex"
-            style={{ opacity: activeChapter === 0 ? 1 : 0 }}
+            ref={outroArtRef}
+            className="story-outro-art"
+            style={{ "--p": 0, "--y": "56px", visibility: "hidden" } as React.CSSProperties}
           >
-            Scroll <ArrowDown className="h-3.5 w-3.5 animate-bounce" />
+            <div className="story-outro-art-float">
+              <NextImage
+                src="/images/moduk-gift-box.png"
+                alt="A Moduk & Co gift box of six handmade modaks, tied with a ribbon"
+                width={1536}
+                height={1024}
+                sizes="(min-width: 1024px) 42vw, 88vw"
+                className="h-auto max-h-full w-auto max-w-full object-contain"
+              />
+            </div>
           </div>
+
+          {/* Closing wordmark. Lives outside the copy column because it owns the
+              whole stage once the frame has emptied. */}
+          <div
+            ref={outroRef}
+            className="story-chapter story-outro pointer-events-none absolute bottom-20 left-6 right-6 lg:bottom-auto lg:left-auto lg:right-10 lg:top-1/2 lg:w-[44%] lg:max-w-lg lg:-translate-y-1/2"
+            style={{ "--p": 0, "--y": "44px", visibility: "hidden" } as React.CSSProperties}
+          >
+            <Outro />
+          </div>
+
+          {/* Where you are in the story. Deliberately just numerals — a filling
+              track next to five dots reads as a loading bar, not a chapter.
+              Bottom-left, because bottom-right is where the chat widget lives. */}
+          <div
+            className="story-count pointer-events-none absolute bottom-8 left-6 font-playfair text-[13px] tracking-[0.18em] text-cream/35 lg:left-10"
+            aria-hidden="true"
+          >
+            <span className="text-cream/80">{String(activeChapter + 1).padStart(2, "0")}</span>
+            {" ⁄ "}
+            {String(CHAPTERS.length).padStart(2, "0")}
+          </div>
+
         </div>
 
 
@@ -543,37 +633,49 @@ export default function ScrollStoryHero() {
 
 function ChapterBody({ chapter, lead }: { chapter: Chapter; lead?: boolean }) {
   // Only the opening chapter is the page's h1; the rest are section headings,
-  // otherwise the page ships six competing h1s.
+  // otherwise the page ships one h1 per chapter.
   const Heading = lead ? "h1" : "h2";
+  // data-line + --i drive the stagger: each line trails the one above it, so
+  // the block assembles from the bottom rather than arriving in one slab.
+  const line = (i: number) => ({ "--i": i, "--m": 1 + i * 0.16 } as React.CSSProperties);
   return (
     <div>
-      <span className="inline-flex items-center gap-2.5 text-[10px] font-semibold uppercase tracking-[0.24em] text-dark/50">
-        {chapter.step && (
-          <span className="font-playfair text-[11px] tracking-normal text-rose">{chapter.step}</span>
-        )}
+      <span
+        data-line
+        style={line(0)}
+        className="inline-flex items-center gap-2.5 text-[10px] font-semibold uppercase tracking-[0.24em] text-cream/55"
+      >
         {chapter.eyebrow}
       </span>
 
-      <Heading className="mt-4 font-playfair text-4xl font-bold leading-[1.02] tracking-tight text-dark sm:text-5xl lg:text-[3.7rem]">
+      <Heading
+        data-line
+        style={line(1)}
+        className="mt-4 font-playfair text-4xl font-bold leading-[1.02] tracking-tight text-cream sm:text-5xl lg:text-[3.5rem]"
+      >
         {chapter.title}
         {chapter.accent && (
           <>
             <br />
-            <span className="italic text-rose">{chapter.accent}</span>
+            <span className="italic text-pink">{chapter.accent}</span>
           </>
         )}
       </Heading>
 
-      <p className="mt-5 max-w-md text-[15px] leading-relaxed text-dark/65 md:text-base">
+      <p
+        data-line
+        style={line(2)}
+        className="mt-5 max-w-md text-[15px] leading-relaxed text-cream/70 md:text-base"
+      >
         {chapter.body}
       </p>
 
       {chapter.chips && (
-        <div className="mt-6 flex flex-wrap gap-2">
+        <div data-line style={line(3)} className="mt-6 flex flex-wrap gap-2">
           {chapter.chips.map((chip) => (
             <span
               key={chip}
-              className="rounded-full border border-dark/12 bg-white/45 px-3 py-1.5 text-[11px] font-semibold text-dark/70 backdrop-blur-sm"
+              className="rounded-full border border-cream/15 bg-cream/[0.06] px-3 py-1.5 text-[11px] font-semibold text-cream/75 backdrop-blur-sm"
             >
               {chip}
             </span>
@@ -582,16 +684,16 @@ function ChapterBody({ chapter, lead }: { chapter: Chapter; lead?: boolean }) {
       )}
 
       {chapter.cta && (
-        <div className="mt-8 flex flex-wrap items-center gap-4">
+        <div data-line style={line(4)} className="mt-8 flex flex-wrap items-center gap-4">
           <Link href="/shop" passHref>
-            <Button size="lg" className="group px-8 py-5 text-sm shadow-xl shadow-rose/20 transition-all duration-300 hover:scale-[1.03] hover:shadow-rose/40">
+            <Button size="lg" className="group px-8 py-5 text-sm shadow-xl shadow-black/30 transition-all duration-300 hover:scale-[1.03]">
               {chapter.cta === "primary" ? "Order Now" : "Order a box"}
               <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Button>
           </Link>
           <Link
             href={chapter.cta === "primary" ? "/shop" : "/delivery"}
-            className="text-sm font-medium text-dark/55 underline-offset-4 transition-colors hover:text-rose hover:underline"
+            className="text-sm font-medium text-cream/60 underline-offset-4 transition-colors hover:text-pink hover:underline"
           >
             {chapter.cta === "primary" ? "View the menu →" : "Check delivery areas →"}
           </Link>
@@ -601,17 +703,77 @@ function ChapterBody({ chapter, lead }: { chapter: Chapter; lead?: boolean }) {
   );
 }
 
+/* ═══════════════════════════════════════════════════════════
+   Closing wordmark
+   ═══════════════════════════════════════════════════════════ */
+
+function Outro() {
+  const line = (i: number) => ({ "--i": i, "--m": 1 + i * 0.16 } as React.CSSProperties);
+  return (
+    <div>
+      <h2
+        data-line
+        style={line(0)}
+        className="font-playfair text-[clamp(2.35rem,4.4vw,3.5rem)] font-bold uppercase leading-[0.98] tracking-[0.1em] text-cream"
+      >
+        Moduk <span className="italic tracking-normal text-pink">&amp;</span> Co
+      </h2>
+
+      <div data-line style={line(1)} className="story-flourish" aria-hidden="true">
+        <svg viewBox="0 0 10 10" className="h-2 w-2 shrink-0 fill-pink">
+          <path d="M5 0 L10 5 L5 10 L0 5 Z" />
+        </svg>
+        <span />
+      </div>
+
+      <p
+        data-line
+        style={line(2)}
+        className="font-playfair text-[clamp(1.05rem,1.6vw,1.35rem)] italic leading-relaxed text-cream/80"
+      >
+        Pure joy. Made at home.
+        <br className="sm:hidden" />
+        <span className="hidden sm:inline"> </span>
+        Delivered to yours.
+      </p>
+
+      <p
+        data-line
+        style={line(3)}
+        className="mt-5 max-w-sm text-[13px] leading-relaxed text-cream/50"
+      >
+        Hand-delivered warm across Mumbai and Navi Mumbai, in the slot you pick.
+      </p>
+
+      <div data-line style={line(4)} className="mt-9 flex flex-wrap items-center gap-4">
+        <Link href="/shop" passHref>
+          <Button size="lg" className="group px-8 py-5 text-sm shadow-xl shadow-black/30 transition-all duration-300 hover:scale-[1.03]">
+            Order a box
+            <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </Button>
+        </Link>
+        <Link
+          href="/delivery"
+          className="text-sm font-medium text-cream/60 underline-offset-4 transition-colors hover:text-pink hover:underline"
+        >
+          Check delivery areas →
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 function StaticCopy({ chapter, compact }: { chapter: Chapter; compact?: boolean }) {
   const Heading = compact ? "h2" : "h1";
   return (
-    <div className={compact ? "border-l-2 border-rose/30 pl-5" : ""}>
-      <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-dark/50">
-        {chapter.step ? `${chapter.step} · ` : ""}{chapter.eyebrow}
+    <div className={compact ? "border-l-2 border-pink/30 pl-5" : ""}>
+      <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-cream/55">
+        {chapter.eyebrow}
       </span>
-      <Heading className={`mt-3 font-playfair font-bold leading-tight text-dark ${compact ? "text-2xl" : "text-4xl lg:text-5xl"}`}>
-        {chapter.title} {chapter.accent && <span className="italic text-rose">{chapter.accent}</span>}
+      <Heading className={`mt-3 font-playfair font-bold leading-tight text-cream ${compact ? "text-2xl" : "text-4xl lg:text-5xl"}`}>
+        {chapter.title} {chapter.accent && <span className="italic text-pink">{chapter.accent}</span>}
       </Heading>
-      <p className="mt-3 max-w-md text-[15px] leading-relaxed text-dark/65">{chapter.body}</p>
+      <p className="mt-3 max-w-md text-[15px] leading-relaxed text-cream/70">{chapter.body}</p>
       {!compact && (
         <Link href="/shop" passHref>
           <Button size="lg" className="mt-6 px-8 py-5 text-sm">Order Now</Button>

@@ -27,17 +27,20 @@ export default async function Home() {
     }
   );
 
-  const { data: products } = await supabase
-    .from('products')
-    .select('*')
-    .eq('is_active', true)
-    .limit(3)
-    .order('created_at', { ascending: false });
-
-  const { data: slots } = await supabase
-    .from('delivery_slots')
-    .select('*')
-    .eq('is_active', true);
+  // Both queries are independent — awaiting them in sequence put two Supabase
+  // round trips on the critical path before a single byte of HTML shipped.
+  const [{ data: products }, { data: slots }] = await Promise.all([
+    supabase
+      .from('products')
+      .select('*')
+      .eq('is_active', true)
+      .limit(3)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('delivery_slots')
+      .select('*')
+      .eq('is_active', true),
+  ]);
 
   const displayProducts = (products && products.length > 0) ? products : MOCK_PRODUCTS;
 

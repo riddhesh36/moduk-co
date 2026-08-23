@@ -141,18 +141,24 @@ html.lenis, html.lenis body {
 }
 
 /* ── Scroll story hero ────────────────────────────────── *
- * The frame sequence is a warm greige studio render. Every colour below is
- * sampled from the frames themselves so the page background and the video
- * background read as one continuous surface — that is what lets the canvas be
- * dissolved away on the left without leaving a visible seam.
+ * The footage is a portrait studio shot on a brown cloth backdrop that runs
+ * near-black at the top to a warm clay at the bottom. Every colour below is
+ * sampled from that backdrop at the matching height, so the page and the
+ * frame are one continuous surface and the frame's edges can simply be
+ * dissolved away. Dark section, cream type — it picks up where the (equally
+ * dark) navbar leaves off rather than fighting the cream body behind it.
  */
 
 :root {
-  --story-bg-high: #DAD4CC;   /* frame top edge   */
-  --story-bg-mid:  #CBC5BB;   /* frame mid        */
-  --story-bg-low:  #B4AC9D;   /* frame lower band */
-  --story-bg-deep: #A79D8B;   /* frame bottom corners */
+  --story-bg-top: #3C2A1E;    /* sampled down the frame's right-hand edge, */
+  --story-bg-1:   #37251A;    /* which is the strip the stage has to meet   */
+  --story-bg-2:   #473224;
+  --story-bg-3:   #513220;
+  --story-bg-4:   #604230;
+  --story-bg-btm: #67432F;
   --story-chapter-vh: 78vh;   /* scroll distance allotted to each chapter */
+  --story-media-w: 60%;       /* frame column width on desktop, backdrop and all */
+  --story-media-max: 880px;
 }
 
 @media (min-width: 1024px) {
@@ -161,96 +167,168 @@ html.lenis, html.lenis body {
   }
 }
 
+/* The gradient lives on the pinned panel, not the section. The section is five
+   chapters tall, so a gradient there would stretch across ~4000px while the
+   frame renders its own backdrop inside a single viewport — the two could
+   never line up, and the frame's edge showed as a hard seam. On the panel the
+   two gradients cover the same box and the edge disappears. The section keeps
+   a flat fill for the sliver visible during overscroll. */
 .story-stage-bg {
-  background:
-    radial-gradient(115% 88% at 52% 4%,
-      var(--story-bg-high) 0%,
-      var(--story-bg-mid) 38%,
-      var(--story-bg-low) 70%,
-      var(--story-bg-deep) 100%);
+  background-color: var(--story-bg-2);
 }
 
-/* Below `lg` the sequence is full-bleed with the copy anchored at the bottom,
-   so the feather runs downwards and hands off to the stage gradient there. */
-.story-canvas {
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 54%, rgba(0, 0, 0, 0.32) 80%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 0%, #000 54%, rgba(0, 0, 0, 0.32) 80%, transparent 100%);
+.story-stage-panel {
+  background: linear-gradient(
+    to bottom,
+    var(--story-bg-top) 0%,
+    var(--story-bg-1) 12%,
+    var(--story-bg-2) 33%,
+    var(--story-bg-3) 56%,
+    var(--story-bg-4) 78%,
+    var(--story-bg-btm) 100%
+  );
 }
 
-/* On desktop the canvas is its own right-hand column, so the feather only has
-   to dissolve its left edge — and that edge is pure studio backdrop, which the
-   stage gradient already matches. The subject never enters the fade. */
+/* Phones: the sequence is portrait and so is the screen, so it takes the whole
+   stage and the copy sits on top of it. */
+.story-media {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* Desktop: a left-hand column whose right edge is dissolved into the stage.
+   That edge is pure backdrop — the subject never enters the fade — so the
+   frame ends without ever showing a border. */
 @media (min-width: 1024px) {
-  .story-canvas {
-    -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.4) 6%, #000 14%);
-    mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.4) 6%, #000 14%);
+  .story-media {
+    right: auto;
+    width: min(var(--story-media-w), var(--story-media-max));
+    /* The fade sits entirely in the extended backdrop, well clear of the
+       subject, so it dissolves cloth into cloth. */
+    -webkit-mask-image: linear-gradient(to right, #000 0%, #000 66%, rgba(0, 0, 0, 0.5) 85%, transparent 100%);
+    mask-image: linear-gradient(to right, #000 0%, #000 66%, rgba(0, 0, 0, 0.5) 85%, transparent 100%);
   }
 }
 
-/* Softens the busiest part of the render behind the copy, in the frames' own
-   colour, so the type keeps its contrast without a grey box appearing. */
-.story-scrim {
-  background:
-    linear-gradient(to bottom, rgba(218, 212, 204, 0.55) 0%, rgba(218, 212, 204, 0) 32%),
-    linear-gradient(to top, rgba(167, 157, 139, 0.62) 0%, rgba(167, 157, 139, 0) 46%);
+/* Phones only: darkens the lower half of the frame so the copy sitting over it
+   keeps its contrast, in the backdrop's own colour so it reads as shadow. */
+.story-media-veil {
+  position: absolute;
+  inset: 0;
   pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgba(24, 15, 8, 0.92) 0%,
+    rgba(24, 15, 8, 0.72) 26%,
+    rgba(24, 15, 8, 0.15) 52%,
+    rgba(24, 15, 8, 0) 68%
+  );
 }
 
 @media (min-width: 1024px) {
-  /* No horizontal wash needed here — the copy column sits clear of the canvas,
-     so only the top and bottom edges get the usual softening. */
-  .story-scrim {
-    background:
-      linear-gradient(to bottom, rgba(218, 212, 204, 0.42) 0%, rgba(218, 212, 204, 0) 24%),
-      linear-gradient(to top, rgba(167, 157, 139, 0.34) 0%, rgba(167, 157, 139, 0) 26%);
+  .story-media-veil {
+    background: none;
   }
 }
 
-/* A whisper of grain over the whole stage. Studio renders are perfectly clean,
-   which is exactly what makes a banded gradient behind them obvious. */
-.story-grain {
-  pointer-events: none;
-  opacity: 0.045;
-  mix-blend-mode: multiply;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+/* Chapter copy. The scroll driver writes --p (0→1 how far the chapter is in)
+   and --y (its offset from the resting line, negative on the way out); these
+   two rules turn that into a staggered rise. --i delays a line's fade and --m
+   lengthens its travel, so the eyebrow settles first and the button last. */
+.story-chapter [data-line] {
+  transform: translate3d(0, calc(var(--y, 0px) * var(--m, 1)), 0);
+  opacity: clamp(0, calc((var(--p, 1) - (var(--i, 0) * 0.07)) / 0.4), 1);
+  will-change: transform, opacity;
 }
 
-/* Chapter rail */
-.story-rail-mark {
-  display: block;
-  width: 11px;
-  height: 11px;
-  border-radius: 9999px;
-  border: 1px solid rgba(44, 26, 29, 0.28);
-  background: transparent;
-  transition: background-color 0.4s ease, border-color 0.4s ease, transform 0.4s ease;
+/* The gift box that fills the frame's column once the sequence has emptied.
+   Two elements on purpose: the outer one carries the scroll-driven entrance,
+   the inner one a slow idle float, so the two transforms never fight. */
+.story-outro-art {
+  position: absolute;
+  left: 1.5rem;
+  right: 1.5rem;
+  top: 11%;
+  height: 32%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  --story-art-shift: 0%;
+  --story-art-tilt: -5deg;
+  opacity: clamp(0, calc(var(--p, 0) / 0.5), 1);
+  /* Rises, grows into place, and swings the last few degrees of its tilt as it
+     settles — so the box arrives rather than simply appearing. */
+  transform:
+    translate3d(var(--story-art-shift), var(--y, 0px), 0)
+    scale(calc(0.93 + (0.07 * var(--p, 0))))
+    rotate(calc(var(--story-art-tilt) - (4deg * (1 - var(--p, 0)))));
+  will-change: transform, opacity;
 }
-.story-rail-dot[data-active="true"] .story-rail-mark {
-  background: #C4617A;
-  border-color: #C4617A;
-  transform: scale(1.15);
+
+@media (min-width: 1024px) {
+  /* Same column the frame occupied, so the eye does not have to travel. */
+  .story-outro-art {
+    right: auto;
+    top: 0;
+    height: 100%;
+    width: min(var(--story-media-w), var(--story-media-max));
+    padding: 0 3rem;
+    /* Nudged off-centre towards the viewport edge: centred in its own column
+       it sat hard against the copy with all the slack on the outside. */
+    --story-art-shift: -18%;
+  }
 }
-.story-rail-label {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  color: rgba(44, 26, 29, 0.35);
-  opacity: 0;
-  transform: translateX(-4px);
-  transition: opacity 0.35s ease, transform 0.35s ease, color 0.35s ease;
+
+.story-outro-art-float {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-height: 100%;
+  animation: story-float 7s ease-in-out infinite;
+  filter: drop-shadow(0 34px 42px rgba(18, 10, 4, 0.55));
 }
-.story-rail-dot:hover .story-rail-label,
-.story-rail-dot[data-active="true"] .story-rail-label {
-  opacity: 1;
-  transform: translateX(0);
-}
-.story-rail-dot[data-active="true"] .story-rail-label {
-  color: rgba(44, 26, 29, 0.7);
+
+@keyframes story-float {
+  0%, 100% { transform: translate3d(0, -5px, 0); }
+  50% { transform: translate3d(0, 5px, 0); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .story-rail-mark,
-  .story-rail-label {
-    transition: none;
+  .story-outro-art-float {
+    animation: none;
   }
 }
+
+/* Hairline rule with a small diamond, between the wordmark and its tagline.
+   The rules are gradients so they fade out rather than stopping dead. */
+.story-flourish {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 1.4rem 0 1.3rem;
+  max-width: 18rem;
+}
+
+.story-flourish > span {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, rgba(253, 248, 240, 0.34), transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story-chapter [data-line] {
+    transform: none;
+  }
+}
+
+.story-grain {
+  pointer-events: none;
+  opacity: 0.05;
+  /* soft-light, not multiply: on a near-black stage multiply has nothing left
+     to darken and the grain simply disappears. */
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
