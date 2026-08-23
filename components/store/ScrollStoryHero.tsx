@@ -500,22 +500,40 @@ export default function ScrollStoryHero() {
      ═══════════════════════════════════════════════════════ */
   if (mode === "static") {
     return (
-      <section className="story-stage-bg w-full">
-        <div className="max-w-7xl mx-auto px-6 py-20 md:py-28">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <section
+        className="story-stage-bg w-full"
+        aria-label="How a Moduk & Co modak is made"
+      >
+        <div className="mx-auto max-w-7xl px-6 py-20 md:py-28">
+          {/* The opening beat, paired with the product rather than a still from
+              the sequence — one frame of it out of context is just a dark
+              rectangle at this size. */}
+          <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.05fr]">
             <StaticCopy chapter={CHAPTERS[0]} />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={frameSrc(1)}
-              alt="A freshly steamed ukadiche modak"
-              className="mx-auto w-full max-w-sm rounded-3xl"
-              loading="eager"
+            <NextImage
+              src="/images/moduk-gift-box.png"
+              alt="A Moduk & Co gift box of six handmade modaks, tied with a ribbon"
+              width={1536}
+              height={1024}
+              sizes="(min-width: 1024px) 45vw, 90vw"
+              className="h-auto w-full max-w-lg justify-self-center drop-shadow-[0_28px_36px_rgba(18,10,4,0.5)]"
+              priority
             />
           </div>
-          <div className="mt-20 grid md:grid-cols-2 gap-x-12 gap-y-14">
-            {CHAPTERS.slice(1).map((c) => (
-              <StaticCopy key={c.id} chapter={c} compact />
-            ))}
+
+          <div className="mt-20 grid gap-x-12 gap-y-14 md:grid-cols-2">
+            {CHAPTERS.filter((c) => !c.outro)
+              .slice(1)
+              .map((c) => (
+                <StaticCopy key={c.id} chapter={c} compact />
+              ))}
+          </div>
+
+          {/* Same closing lockup the scrolling version ends on. Outside a
+              .story-chapter wrapper, so none of the scroll-driven transforms
+              apply and it simply renders. */}
+          <div className="mt-24 border-t border-cream/10 pt-14">
+            <Outro />
           </div>
         </div>
       </section>
@@ -774,6 +792,18 @@ function StaticCopy({ chapter, compact }: { chapter: Chapter; compact?: boolean 
         {chapter.title} {chapter.accent && <span className="italic text-pink">{chapter.accent}</span>}
       </Heading>
       <p className="mt-3 max-w-md text-[15px] leading-relaxed text-cream/70">{chapter.body}</p>
+      {chapter.chips && (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {chapter.chips.map((chip) => (
+            <span
+              key={chip}
+              className="rounded-full border border-cream/15 bg-cream/[0.06] px-3 py-1.5 text-[11px] font-semibold text-cream/75"
+            >
+              {chip}
+            </span>
+          ))}
+        </div>
+      )}
       {!compact && (
         <Link href="/shop" passHref>
           <Button size="lg" className="mt-6 px-8 py-5 text-sm">Order Now</Button>
