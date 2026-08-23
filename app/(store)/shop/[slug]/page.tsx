@@ -18,22 +18,23 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
     }
   );
 
-  // Fetch product by slug
-  const { data: product } = await supabase
-    .from('products')
-    .select('*')
-    .eq('slug', params.slug)
-    .single();
+  // The slot list doesn't depend on the product, so fetch both at once and
+  // only then decide whether the product exists.
+  const [{ data: product }, { data: slots }] = await Promise.all([
+    supabase
+      .from('products')
+      .select('*')
+      .eq('slug', params.slug)
+      .single(),
+    supabase
+      .from('delivery_slots')
+      .select('*')
+      .eq('is_active', true),
+  ]);
 
   if (!product) {
     notFound();
   }
-
-  // Fetch all active slots
-  const { data: slots } = await supabase
-    .from('delivery_slots')
-    .select('*')
-    .eq('is_active', true);
 
   return (
     <ProductDetailClient product={product} slots={slots || []} />

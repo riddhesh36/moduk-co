@@ -55,7 +55,7 @@ export function DeliveryAdvisoryModal() {
           </div>
 
           {/* Rule Cards Grid (Scrollable) */}
-          <div className="flex-1 overflow-y-auto space-y-4 py-4 pr-1 -mr-1 scrollbar-thin">
+          <div data-lenis-prevent className="flex-1 overflow-y-auto space-y-4 py-4 pr-1 -mr-1 scrollbar-thin">
 
             {/* Rule 1 */}
             <div className="flex gap-4 items-start p-4 rounded-xl bg-[#FDF8F0] border border-[#FDF0F3] hover:bg-[#FDF8F0]/80 transition-colors">

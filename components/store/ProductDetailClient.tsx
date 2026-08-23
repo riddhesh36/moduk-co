@@ -125,7 +125,7 @@ export default function ProductDetailClient({ product, slots }: ProductDetailCli
       </div>
 
       {/* MOBILE STICKY BOTTOM BAR */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-dark/10 p-4 shadow-2xl z-40 rounded-t-2xl flex flex-col gap-4 max-h-[70vh] overflow-y-auto">
+      <div data-lenis-prevent className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-dark/10 p-4 shadow-2xl z-40 rounded-t-2xl flex flex-col gap-4 max-h-[70vh] overflow-y-auto">
         <div>
           <h3 className="text-sm font-bold text-dark mb-3">Select Delivery Slot</h3>
           <SlotSelector 

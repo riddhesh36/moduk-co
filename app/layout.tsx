@@ -22,6 +22,10 @@ const ebGaramond = EB_Garamond({
   variable: "--font-eb-garamond",
   weight: ["400", "500", "600", "700"],
   style: ["normal", "italic"],
+  // Only /about and /terms use `.font-garamond`. Declaring it in the root
+  // layout otherwise puts a <link rel=preload> for it on the critical path of
+  // every route, homepage included. It still loads on the pages that use it.
+  preload: false,
 });
 
 export const metadata: Metadata = {

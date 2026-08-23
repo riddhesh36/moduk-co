@@ -18,16 +18,18 @@ export default async function ShopGridPage() {
     }
   );
 
-  const { data: products } = await supabase
-    .from('products')
-    .select('*')
-    .eq('is_active', true)
-    .order('created_at', { ascending: false });
-
-  const { data: slots } = await supabase
-    .from('delivery_slots')
-    .select('*')
-    .eq('is_active', true);
+  // Independent queries — run them together rather than back to back.
+  const [{ data: products }, { data: slots }] = await Promise.all([
+    supabase
+      .from('products')
+      .select('*')
+      .eq('is_active', true)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('delivery_slots')
+      .select('*')
+      .eq('is_active', true),
+  ]);
 
   // Fallback to mock products if none in DB (for initial dev)
   const displayProducts = (products && products.length > 0) ? products : MOCK_PRODUCTS;
